@@ -1,17 +1,23 @@
 const rl = @import("raylib");
 const std = @import("std");
 
-pub fn main() anyerror!void {
+pub fn main() !void {
     const screenWidth = 1280;
     const screenHeight = 720;
 
     rl.initWindow(screenWidth, screenHeight, "Flower");
     defer rl.closeWindow();
 
+    rl.setTargetFPS(60);
+
     var ballPosition = rl.Vector2.init(-100, -100);
     var ballColor = rl.Color.dark_blue;
 
-    rl.setTargetFPS(60);
+    const image = try rl.loadImage("resources/r.png"); // Loaded in CPU memory (RAM)
+    const texture = try rl.loadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
+    // Once image has been converted to texture and uploaded to VRAM,
+    // it can be unloaded from RAM
+    rl.unloadImage(image);
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -31,9 +37,21 @@ pub fn main() anyerror!void {
         // Draw
         rl.beginDrawing();
         defer rl.endDrawing();
+        rl.clearBackground(rl.Color.black);
 
-        rl.clearBackground(rl.Color.ray_white);
+        rl.drawTexture(
+            texture,
+            0,
+            0,
+            rl.Color.white,
+        );
+        rl.drawTexture(
+            texture,
+            screenWidth / 2 - @divFloor(texture.width, 2),
+            screenHeight / 2 - @divFloor(texture.height, 2),
+            rl.Color.white,
+        );
 
-        rl.drawCircleV(ballPosition, 40, ballColor);
+        rl.drawCircleV(ballPosition, 5, ballColor);
     }
 }
