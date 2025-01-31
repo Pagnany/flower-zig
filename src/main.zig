@@ -1,5 +1,8 @@
 const rl = @import("raylib");
 const std = @import("std");
+const ctime = @cImport({
+    @cInclude("time.h");
+});
 
 pub fn main() !void {
     const screenWidth = 1280;
@@ -11,7 +14,16 @@ pub fn main() !void {
     rl.setTargetFPS(60);
 
     var ballPosition = rl.Vector2.init(-100, -100);
-    var ballColor = rl.Color.dark_blue;
+
+    // Time
+    var now: ctime.time_t = undefined;
+    _ = ctime.time(&now);
+    const timeinfo = ctime.gmtime(&now);
+    const hour = timeinfo.*.tm_hour;
+    std.debug.print("Hour: {}\n", .{hour});
+
+    // Full Timestamp
+    const s = ctime.asctime(timeinfo);
 
     const image = try rl.loadImage("resources/r.png"); // Loaded in CPU memory (RAM)
     const texture = try rl.loadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
@@ -23,16 +35,8 @@ pub fn main() !void {
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // Update
         ballPosition = rl.getMousePosition();
-        ballPosition.x = @as(f32, @floatFromInt(rl.getMouseX()));
-        ballPosition.y = @as(f32, @floatFromInt(rl.getMouseY()));
 
-        if (rl.isMouseButtonPressed(.left)) {
-            ballColor = rl.Color.maroon;
-        } else if (rl.isMouseButtonPressed(.middle)) {
-            ballColor = rl.Color.lime;
-        } else if (rl.isMouseButtonPressed(.right)) {
-            ballColor = rl.Color.dark_blue;
-        }
+        if (rl.isMouseButtonPressed(.left)) {} else if (rl.isMouseButtonPressed(.middle)) {} else if (rl.isMouseButtonPressed(.right)) {}
 
         // Draw
         rl.beginDrawing();
@@ -52,6 +56,6 @@ pub fn main() !void {
             rl.Color.white,
         );
 
-        rl.drawCircleV(ballPosition, 5, ballColor);
+        rl.drawText(s, 1000, 10, 20, rl.Color.white);
     }
 }
