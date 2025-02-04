@@ -3,8 +3,31 @@ const std = @import("std");
 const ctime = @cImport({
     @cInclude("time.h");
 });
+const http = @import("http.zig");
+const learn = @import("learn_zig.zig");
 
 pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
+    // learn.learn();
+
+    // Log in to the server
+    var login: http.LoginResponse = undefined;
+    {
+        var a_username = std.ArrayList(u8).init(allocator);
+        defer a_username.deinit();
+        try a_username.appendSlice("pagnany");
+
+        var a_password = std.ArrayList(u8).init(allocator);
+        defer a_password.deinit();
+        try a_password.appendSlice("test");
+
+        login = try http.http_test(allocator, a_username.items, a_password.items);
+    }
+    std.debug.print("Login ID: {s}\n", .{login.id});
+    std.debug.print("Login Token: {s}\n", .{login.token});
+
     const screenWidth = 1280;
     const screenHeight = 720;
 
