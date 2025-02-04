@@ -7,10 +7,10 @@ const http = @import("http.zig");
 const learn = @import("learn_zig.zig");
 
 pub fn main() !void {
+    // learn.learn();
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
-
-    // learn.learn();
 
     // Log in to the server
     var login: http.LoginResponse = undefined;
@@ -23,7 +23,7 @@ pub fn main() !void {
         defer a_password.deinit();
         try a_password.appendSlice("test");
 
-        login = try http.http_test(allocator, a_username.items, a_password.items);
+        login = try http.login_server(allocator, a_username.items, a_password.items);
     }
     std.debug.print("Login ID: {s}\n", .{login.id});
     std.debug.print("Login Token: {s}\n", .{login.token});
@@ -38,30 +38,31 @@ pub fn main() !void {
 
     var ballPosition = rl.Vector2.init(-100, -100);
 
-    // Time
-    var now: ctime.time_t = undefined;
-    _ = ctime.time(&now);
-    const timeinfo = ctime.gmtime(&now);
-    const hour = timeinfo.*.tm_hour;
-    std.debug.print("Hour: {}\n", .{hour});
-
-    // Full Timestamp
-    const s = ctime.asctime(timeinfo);
-
     const image = try rl.loadImage("resources/r.png"); // Loaded in CPU memory (RAM)
     const texture = try rl.loadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
     // Once image has been converted to texture and uploaded to VRAM,
     // it can be unloaded from RAM
     rl.unloadImage(image);
 
+    var timestamp = get_timestamp();
+    var timestamp_update = rl.getTime();
+
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
-        // Update
+        // UPDATE
+        // Timestamp
+        if (timestamp_update + 1 < rl.getTime()) {
+            timestamp = get_timestamp();
+            timestamp_update = rl.getTime();
+        }
+
+        // Ballposition
         ballPosition = rl.getMousePosition();
 
+        // Mouse input
         if (rl.isMouseButtonPressed(.left)) {} else if (rl.isMouseButtonPressed(.middle)) {} else if (rl.isMouseButtonPressed(.right)) {}
 
-        // Draw
+        // DRAW
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
@@ -79,6 +80,15 @@ pub fn main() !void {
             rl.Color.white,
         );
 
-        rl.drawText(s, 1000, 10, 20, rl.Color.white);
+        // Timestamp at the top
+        rl.drawText(timestamp, 1000, 10, 20, rl.Color.white);
     }
+}
+
+fn get_timestamp() [*c]u8 {
+    var now: ctime.time_t = undefined;
+    _ = ctime.time(&now);
+    const timeinfo = ctime.gmtime(&now);
+    const s = ctime.asctime(timeinfo);
+    return s;
 }
