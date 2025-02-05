@@ -28,6 +28,7 @@ pub fn main() !void {
     std.debug.print("Login ID: {s}\n", .{login.id});
     std.debug.print("Login Token: {s}\n", .{login.token});
 
+    // Raylib init window
     const screenWidth = 1280;
     const screenHeight = 720;
 
@@ -38,21 +39,26 @@ pub fn main() !void {
 
     var ballPosition = rl.Vector2.init(-100, -100);
 
+    // Raylib load image and convert to texture
     const image = try rl.loadImage("resources/r.png"); // Loaded in CPU memory (RAM)
     const texture = try rl.loadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
     // Once image has been converted to texture and uploaded to VRAM,
     // it can be unloaded from RAM
     rl.unloadImage(image);
 
-    var timestamp = get_timestamp();
+    // Timestamp
     var timestamp_update = rl.getTime();
+    var time = get_timestamp_datetime();
+    var timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // UPDATE
         // Timestamp
-        if (timestamp_update + 1 < rl.getTime()) {
-            timestamp = get_timestamp();
+        if (timestamp_update + 0.1 < rl.getTime()) {
+            time = get_timestamp_datetime();
+            timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
+
             timestamp_update = rl.getTime();
         }
 
@@ -85,10 +91,14 @@ pub fn main() !void {
     }
 }
 
-fn get_timestamp() [*c]u8 {
+pub fn get_timestamp_datetime() []u8 {
     var now: ctime.time_t = undefined;
     _ = ctime.time(&now);
     const timeinfo = ctime.gmtime(&now);
-    const s = ctime.asctime(timeinfo);
-    return s;
+
+    var buffer: [20]u8 = undefined;
+    const mystring: []u8 = buffer[0..buffer.len];
+
+    _ = ctime.strftime(mystring.ptr, 20, "%Y.%m.%d %H:%M:%S", timeinfo);
+    return mystring;
 }
