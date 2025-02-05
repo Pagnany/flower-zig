@@ -55,10 +55,10 @@ pub fn main() !void {
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         // UPDATE
         // Timestamp
-        if (timestamp_update + 0.1 < rl.getTime()) {
+        if (timestamp_update + 1 < rl.getTime()) {
+            allocator.free(timestamp);
             time = get_timestamp_datetime();
             timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
-
             timestamp_update = rl.getTime();
         }
 
