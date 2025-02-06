@@ -5,6 +5,8 @@ pub const LoginResponse = struct {
     token: []u8,
 };
 
+/// Connection to Game Server
+/// Get the Player ID and Login Token
 pub fn login_server(allocator: std.mem.Allocator, username: []u8, password: []u8) !LoginResponse {
 
     // Stringifying 'data' into JSON
