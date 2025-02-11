@@ -6,27 +6,26 @@ const ctime = @cImport({
 const http = @import("http.zig");
 const learn = @import("learn_zig.zig");
 
+const allocator = std.heap.c_allocator;
+
 pub fn main() !void {
     // learn.learn();
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-
-    // Log in to the server
-    var login: http.LoginResponse = undefined;
-    {
-        var a_username = std.ArrayList(u8).init(allocator);
-        defer a_username.deinit();
-        try a_username.appendSlice("pagnany");
-
-        var a_password = std.ArrayList(u8).init(allocator);
-        defer a_password.deinit();
-        try a_password.appendSlice("test");
-
-        login = try http.login_server(allocator, a_username.items, a_password.items);
-    }
-    std.debug.print("Login ID: {s}\n", .{login.id});
-    std.debug.print("Login Token: {s}\n", .{login.token});
+    // // Log in to the server
+    // var login: http.LoginResponse = undefined;
+    // {
+    //     var a_username = std.ArrayList(u8).init(allocator);
+    //     defer a_username.deinit();
+    //     try a_username.appendSlice("pagnany");
+    //
+    //     var a_password = std.ArrayList(u8).init(allocator);
+    //     defer a_password.deinit();
+    //     try a_password.appendSlice("test");
+    //
+    //     login = try http.login_server(allocator, a_username.items, a_password.items);
+    // }
+    // std.debug.print("Login ID: {s}\n", .{login.id});
+    // std.debug.print("Login Token: {s}\n", .{login.token});
 
     // Raylib init window
     const screenWidth = 1280;
@@ -105,10 +104,10 @@ fn get_timestamp_datetime() []u8 {
     _ = ctime.time(&now);
     const timeinfo = ctime.gmtime(&now);
 
-    var buffer: [20]u8 = undefined;
+    var buffer: [64]u8 = undefined;
     const mystring: []u8 = buffer[0..buffer.len];
 
-    _ = ctime.strftime(mystring.ptr, 20, "%Y.%m.%d %H:%M:%S", timeinfo);
+    _ = ctime.strftime(mystring.ptr, 64, "%Y.%m.%d %H:%M:%S", timeinfo);
 
     return mystring;
 }
