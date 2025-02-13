@@ -8,9 +8,13 @@ pub const LoginResponse = struct {
 /// Connection to Game Server
 /// Get the Player ID and Login Token
 pub fn login_server(allocator: std.mem.Allocator, username: []u8, password: []u8) !LoginResponse {
+    var a_action = std.ArrayList(u8).init(allocator);
+    defer a_action.deinit();
+    try a_action.appendSlice("login");
 
     // Stringifying 'data' into JSON
     const data = .{
+        .action = a_action.items,
         .username = username,
         .password = password,
     };
@@ -35,7 +39,7 @@ pub fn login_server(allocator: std.mem.Allocator, username: []u8, password: []u8
 
     // Reading the response
     const body = try request.reader().readAllAlloc(allocator, 256);
-    // std.debug.print("{s}\n", .{body});
+    defer allocator.free(body);
     const parsed = try std.json.parseFromSlice(LoginResponse, allocator, body, .{});
 
     return parsed.value;

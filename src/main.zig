@@ -67,6 +67,12 @@ pub fn main() !void {
             timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
             timestamp_update = loop_time;
         }
+        // Energy saver
+        if (rl.isKeyPressed(.p) and rl.getFPS() == 60) {
+            rl.setTargetFPS(5);
+        } else if (rl.isKeyPressed(.p) and rl.getFPS() == 5) {
+            rl.setTargetFPS(60);
+        }
 
         // Ballposition
         ballPosition = rl.getMousePosition();
@@ -81,8 +87,8 @@ pub fn main() !void {
 
         rl.drawTexture(
             texture,
-            0,
-            0,
+            200,
+            200,
             rl.Color.white,
         );
         rl.drawTexture(
@@ -91,9 +97,11 @@ pub fn main() !void {
             screenHeight / 2 - @divFloor(texture.height, 2),
             rl.Color.white,
         );
+        rl.drawTextureV(texture, ballPosition, rl.Color.white);
 
         // Timestamp at the top
         rl.drawText(timestamp, 1000, 10, 20, rl.Color.white);
+        rl.drawFPS(10, 10);
 
         prev_loop_time = loop_time;
     }
