@@ -28,8 +28,8 @@ pub fn main() !void {
     // std.debug.print("Login Token: {s}\n", .{login.token});
 
     // Raylib init window
-    const screenWidth = 1280;
-    const screenHeight = 720;
+    const screenWidth = 1920;
+    const screenHeight = 1080;
 
     rl.initWindow(screenWidth, screenHeight, "Flower");
     defer rl.closeWindow();
@@ -48,8 +48,10 @@ pub fn main() !void {
 
     // Timestamp
     var timestamp_update = rl.getTime();
-    var time = get_timestamp_datetime();
-    var timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
+    var buffer: [24]u8 = undefined;
+    const time_buffer: []u8 = buffer[0..buffer.len];
+    get_timestamp(time_buffer);
+    var timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time_buffer);
 
     var prev_loop_time = rl.getTime();
 
@@ -63,8 +65,8 @@ pub fn main() !void {
         // Timestamp
         if (timestamp_update + 1 < loop_time) {
             allocator.free(timestamp);
-            time = get_timestamp_datetime();
-            timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time);
+            get_timestamp(time_buffer);
+            timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time_buffer);
             timestamp_update = loop_time;
         }
         // Energy saver
@@ -107,15 +109,13 @@ pub fn main() !void {
     }
 }
 
-fn get_timestamp_datetime() []u8 {
+fn get_timestamp(buffer: []u8) void {
     var now: ctime.time_t = undefined;
     _ = ctime.time(&now);
     const timeinfo = ctime.gmtime(&now);
 
-    var buffer: [64]u8 = undefined;
-    const mystring: []u8 = buffer[0..buffer.len];
+    // clear slice
+    @memset(buffer, 0);
 
-    _ = ctime.strftime(mystring.ptr, 64, "%Y.%m.%d %H:%M:%S", timeinfo);
-
-    return mystring;
+    _ = ctime.strftime(buffer.ptr, buffer.len, "%Y.%m.%d %H:%M:%S", timeinfo);
 }
