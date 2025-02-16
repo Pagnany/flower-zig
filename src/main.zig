@@ -4,13 +4,10 @@ const ctime = @cImport({
     @cInclude("time.h");
 });
 const http = @import("http.zig");
-const learn = @import("learn_zig.zig");
 
 const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    // learn.learn();
-
     // // Log in to the server
     // var login: http.LoginResponse = undefined;
     // {
