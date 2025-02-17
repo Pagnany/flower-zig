@@ -36,7 +36,7 @@ pub fn main() !void {
     // std.debug.print("Login ID: {s}\n", .{login.id});
     // std.debug.print("Login Token: {s}\n", .{login.token});
 
-    // Raylib init window
+    // ---- WINDOW SETUP ----
     const screenWidth = 1280;
     const screenHeight = 720;
 
@@ -44,16 +44,20 @@ pub fn main() !void {
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);
+    // ---- END WINDOW SETUP ----
 
-    var mouse_pos = rl.Vector2.init(-100, -100);
-
-    // Raylib load image and convert to texture
-    const image = try rl.loadImage("resources/r.png"); // Loaded in CPU memory (RAM)
-    const texture = try rl.loadTextureFromImage(image); // Image converted to texture, GPU memory (VRAM)
+    // ---- TEXTURES ----
+    // Test
+    const image = try rl.loadImage("resources/r.png");
+    const texture = try rl.loadTextureFromImage(image);
     defer rl.unloadTexture(texture);
-    // Once image has been converted to texture and uploaded to VRAM,
-    // it can be unloaded from RAM
     rl.unloadImage(image);
+    // Watering Can
+    const watering_can_img = try rl.loadImage("resources/watering_can_01.png");
+    const watering_can_texture = try rl.loadTextureFromImage(watering_can_img);
+    defer rl.unloadTexture(watering_can_texture);
+    rl.unloadImage(watering_can_img);
+    // ---- END TEXTURES ----
 
     // Timestamp
     var timestamp_update = rl.getTime();
@@ -65,6 +69,8 @@ pub fn main() !void {
 
     var prev_loop_time = rl.getTime();
 
+    var mouse_pos = rl.Vector2.init(0, 0);
+
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
         const loop_time = rl.getTime();
@@ -72,7 +78,7 @@ pub fn main() !void {
         _ = delta_time;
         mouse_pos = rl.getMousePosition();
 
-        // UPDATE
+        // ---- UPDATE ----
         // Timestamp
         if (timestamp_update + 1 < loop_time) {
             allocator.free(timestamp);
@@ -80,43 +86,28 @@ pub fn main() !void {
             timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time_buffer);
             timestamp_update = loop_time;
         }
-        // Energy saver
-        if (rl.isKeyPressed(.p) and rl.getFPS() == 60) {
-            rl.setTargetFPS(5);
-        } else if (rl.isKeyPressed(.p) and rl.getFPS() == 5) {
-            rl.setTargetFPS(60);
-        }
-
-        // Ballposition
 
         // Mouse input
         if (rl.isMouseButtonPressed(.left)) {
             std.debug.print("Mouse left button pressed at x:{d}, y:{d}\n", .{ mouse_pos.x, mouse_pos.y });
         } else if (rl.isMouseButtonPressed(.middle)) {} else if (rl.isMouseButtonPressed(.right)) {}
+        // ---- END UPDATE ----
 
-        // DRAW
+        // --- DRAW ---
         rl.beginDrawing();
         defer rl.endDrawing();
         rl.clearBackground(rl.Color.black);
 
-        rl.drawTexture(
-            texture,
-            200,
-            200,
-            rl.Color.white,
-        );
-        rl.drawTexture(
-            texture,
-            screenWidth / 2 - @divFloor(texture.width, 2),
-            screenHeight / 2 - @divFloor(texture.height, 2),
-            rl.Color.white,
-        );
-        // rl.drawTextureV(texture, ballPosition, rl.Color.white);
-        rl.drawCircleV(mouse_pos, 10, rl.Color.red);
+        // Overview Menu (Right)
+        rl.drawTexture(watering_can_texture, screenWidth - 100, 50, rl.Color.white);
+        rl.drawRectangle(screenWidth - 100, 155, 100, 100, rl.Color.red);
+        rl.drawRectangle(screenWidth - 100, 260, 100, 100, rl.Color.red);
+        rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
         // Timestamp at the top
         rl.drawText(timestamp, 1000, 10, 20, rl.Color.white);
         rl.drawFPS(10, 10);
+        // --- END DRAW ---
 
         prev_loop_time = loop_time;
     }
