@@ -4,7 +4,7 @@ const rlz = @import("raylib-zig");
 pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    
+
     const raylib_dep = b.dependency("raylib-zig", .{
         .target = target,
         .optimize = optimize,
@@ -38,6 +38,9 @@ pub fn build(b: *std.Build) !void {
 
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
+
+    // Disable console
+    // exe.subsystem = .Windows;
 
     const run_cmd = b.addRunArtifact(exe);
     const run_step = b.step("run", "Run flower-zig");
