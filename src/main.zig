@@ -43,6 +43,17 @@ pub fn main() !void {
     const flowerpot_texture = try rl.loadTextureFromImage(flowerpot_img);
     defer rl.unloadTexture(flowerpot_texture);
     rl.unloadImage(flowerpot_img);
+    // Flowerstem
+    const flowerstem_img = try rl.loadImage("resources/flower_stem_01.png");
+    const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
+    defer rl.unloadTexture(flowerstem_texture);
+    var flowerstem_img_45 = flowerstem_img.copy();
+    rl.imageRotate(&flowerstem_img_45, 45);
+    const flowerstem_texture_45 = try rl.loadTextureFromImage(flowerstem_img_45);
+    defer rl.unloadTexture(flowerstem_texture_45);
+    // print heigt and width
+    std.debug.print(".width: {d}, .height: {d}\n", .{ flowerstem_img_45.width, flowerstem_img_45.height });
+    rl.unloadImage(flowerstem_img);
     // ---- END TEXTURES ----
 
     // Timestamp
@@ -56,6 +67,7 @@ pub fn main() !void {
     var prev_loop_time = rl.getTime();
 
     var mouse_pos = rl.Vector2.init(0, 0);
+    const flowerpot_root_pos = rl.Vector2.init((screenWidth / 2 - 50) - 50, screenHeight - 100 - 5);
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -91,7 +103,11 @@ pub fn main() !void {
         rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
         // Flowerpot
-        rl.drawTexture(flowerpot_texture, (screenWidth / 2 - 50) - 50, screenHeight - 100 - 5, rl.Color.white);
+        rl.drawTextureV(flowerpot_texture, flowerpot_root_pos, rl.Color.white);
+
+        // Flowerstem
+        rl.drawTextureV(flowerstem_texture, flowerpot_root_pos.add(rl.Vector2.init(0, -100)), rl.Color.white);
+        rl.drawTextureV(flowerstem_texture_45, flowerpot_root_pos.add(rl.Vector2.init(13, -200)), rl.Color.white);
 
         // Timestamp at the top
         rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
