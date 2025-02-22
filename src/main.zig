@@ -15,30 +15,11 @@ const Flower = struct {
 pub fn main() !void {
     const allocator = std.heap.c_allocator;
 
-    // Flowerslist test
-    const my_flowers = try creat_flowers(allocator);
-    defer destroy_flowers(allocator, my_flowers);
-    for (my_flowers.items) |flower| {
-        std.debug.print("Name: {s}, Description: {s}, Price: {d}, Image: {s}\n", .{ flower.name, flower.description, flower.price, flower.image });
-    }
-
-    // // Log in to the server
-    // var login: http.LoginResponse = undefined;
-    // TODO: Free Memory for id and token
-    // {
-    //     const username = try allocator.dupe(u8, "pagnany");
-    //     defer allocator.free(username);
-    //     const password = try allocator.dupe(u8, "test");
-    //     defer allocator.free(password);
-    //
-    //     login = try http.login_server(allocator, username, password);
-    // }
-    // std.debug.print("Login ID: {s}\n", .{login.id});
-    // std.debug.print("Login Token: {s}\n", .{login.token});
-
     // ---- WINDOW SETUP ----
     const screenWidth = 1280;
     const screenHeight = 720;
+    // const screenWidth = 1920;
+    // const screenHeight = 1080;
 
     rl.initWindow(screenWidth, screenHeight, "Flower");
     defer rl.closeWindow();
@@ -57,6 +38,11 @@ pub fn main() !void {
     const watering_can_texture = try rl.loadTextureFromImage(watering_can_img);
     defer rl.unloadTexture(watering_can_texture);
     rl.unloadImage(watering_can_img);
+    // Flowerpot
+    const flowerpot_img = try rl.loadImage("resources/flower_pot_01.png");
+    const flowerpot_texture = try rl.loadTextureFromImage(flowerpot_img);
+    defer rl.unloadTexture(flowerpot_texture);
+    rl.unloadImage(flowerpot_img);
     // ---- END TEXTURES ----
 
     // Timestamp
@@ -104,8 +90,11 @@ pub fn main() !void {
         rl.drawRectangle(screenWidth - 100, 260, 100, 100, rl.Color.red);
         rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
+        // Flowerpot
+        rl.drawTexture(flowerpot_texture, (screenWidth / 2 - 50) - 50, screenHeight - 100 - 5, rl.Color.white);
+
         // Timestamp at the top
-        rl.drawText(timestamp, 1000, 10, 20, rl.Color.white);
+        rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
         rl.drawFPS(10, 10);
         // --- END DRAW ---
 
