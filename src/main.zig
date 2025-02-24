@@ -47,13 +47,21 @@ pub fn main() !void {
     const flowerstem_img = try rl.loadImage("resources/flower_stem_01.png");
     const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
     defer rl.unloadTexture(flowerstem_texture);
+
     var flowerstem_img_45 = flowerstem_img.copy();
     rl.imageRotate(&flowerstem_img_45, 45);
     const flowerstem_texture_45 = try rl.loadTextureFromImage(flowerstem_img_45);
     defer rl.unloadTexture(flowerstem_texture_45);
-    // print heigt and width
-    std.debug.print(".width: {d}, .height: {d}\n", .{ flowerstem_img_45.width, flowerstem_img_45.height });
+
     rl.unloadImage(flowerstem_img);
+
+    // Test
+    const angle = 80;
+    var test_pic = try rl.loadImage("resources/test.png");
+    rl.imageRotate(&test_pic, angle);
+    const test_texture = try rl.loadTextureFromImage(test_pic);
+    defer rl.unloadTexture(test_texture);
+    rl.unloadImage(test_pic);
     // ---- END TEXTURES ----
 
     // Timestamp
@@ -94,7 +102,7 @@ pub fn main() !void {
         // --- DRAW ---
         rl.beginDrawing();
         defer rl.endDrawing();
-        rl.clearBackground(rl.Color.black);
+        rl.clearBackground(rl.Color.dark_gray);
 
         // Overview Menu (Right)
         rl.drawTexture(watering_can_texture, screenWidth - 100, 50, rl.Color.white);
@@ -108,6 +116,10 @@ pub fn main() !void {
         // Flowerstem
         rl.drawTextureV(flowerstem_texture, flowerpot_root_pos.add(rl.Vector2.init(0, -100)), rl.Color.white);
         rl.drawTextureV(flowerstem_texture_45, flowerpot_root_pos.add(rl.Vector2.init(13, -200)), rl.Color.white);
+
+        const temp_pos = rl.Vector2.init(100, 100);
+        rl.drawTextureV(test_texture, temp_pos, rl.Color.white);
+        mark_corners(temp_pos, angle, 100);
 
         // Timestamp at the top
         rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
@@ -146,4 +158,33 @@ fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) voi
         alloc.free(f.image);
     }
     flowers.deinit();
+}
+
+fn mark_corners(pos: rl.Vector2, angle: i32, pic_lenght: i32) void {
+    const pic_lenght_f32: f32 = @as(f32, @floatFromInt(pic_lenght));
+
+    const angle1_f32: f32 = @as(f32, @floatFromInt(angle)) * 3.14159 / 180.0;
+    const length1: f32 = @sin(angle1_f32) * pic_lenght_f32;
+
+    const temp_angle = 180.0 - 90.0 - @as(f32, @floatFromInt(angle));
+    const angle2_f32: f32 = (temp_angle * 3.14159) / 180.0;
+    const length2: f32 = @sin(angle2_f32) * pic_lenght_f32;
+
+    const top_left = pos.add(rl.Vector2.init(length1, 0));
+    rl.drawCircleV(top_left, 5, rl.Color.red);
+    const bot_left = pos.add(rl.Vector2.init(0, length2));
+    rl.drawCircleV(bot_left, 5, rl.Color.red);
+    const top_right = top_left.add(rl.Vector2.init(length2, 0)).add(rl.Vector2.init(0, length1));
+    rl.drawCircleV(top_right, 5, rl.Color.red);
+    const bot_right = bot_left.add(rl.Vector2.init(length2, 0)).add(rl.Vector2.init(0, length1));
+    rl.drawCircleV(bot_right, 5, rl.Color.red);
+
+    const middle_top = top_left.add(top_right).divide(rl.Vector2.init(2, 2));
+    rl.drawCircleV(middle_top, 5, rl.Color.red);
+    const middle_bot = bot_left.add(bot_right).divide(rl.Vector2.init(2, 2));
+    rl.drawCircleV(middle_bot, 5, rl.Color.red);
+    const middle_left = top_left.add(bot_left).divide(rl.Vector2.init(2, 2));
+    rl.drawCircleV(middle_left, 5, rl.Color.red);
+    const middle_right = top_right.add(bot_right).divide(rl.Vector2.init(2, 2));
+    rl.drawCircleV(middle_right, 5, rl.Color.red);
 }
