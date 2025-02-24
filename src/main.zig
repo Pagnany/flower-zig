@@ -5,6 +5,8 @@ const ctime = @cImport({
 });
 const http = @import("http.zig");
 
+const PI = 3.14159;
+
 const Flower = struct {
     name: []u8,
     description: []u8,
@@ -56,8 +58,8 @@ pub fn main() !void {
     rl.unloadImage(flowerstem_img);
 
     // Test
-    const angle = 80;
-    var test_pic = try rl.loadImage("resources/test.png");
+    const angle = 10;
+    var test_pic = try rl.loadImage("resources/flower_stem_01.png");
     rl.imageRotate(&test_pic, angle);
     const test_texture = try rl.loadTextureFromImage(test_pic);
     defer rl.unloadTexture(test_texture);
@@ -163,11 +165,11 @@ fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) voi
 fn mark_corners(pos: rl.Vector2, angle: i32, pic_lenght: i32) void {
     const pic_lenght_f32: f32 = @as(f32, @floatFromInt(pic_lenght));
 
-    const angle1_f32: f32 = @as(f32, @floatFromInt(angle)) * 3.14159 / 180.0;
+    const angle1_f32: f32 = (@as(f32, @floatFromInt(angle)) * PI) / 180.0;
     const length1: f32 = @sin(angle1_f32) * pic_lenght_f32;
 
     const temp_angle = 180.0 - 90.0 - @as(f32, @floatFromInt(angle));
-    const angle2_f32: f32 = (temp_angle * 3.14159) / 180.0;
+    const angle2_f32: f32 = (temp_angle * PI) / 180.0;
     const length2: f32 = @sin(angle2_f32) * pic_lenght_f32;
 
     const top_left = pos.add(rl.Vector2.init(length1, 0));
