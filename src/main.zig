@@ -58,7 +58,11 @@ pub fn main() !void {
     var prev_loop_time = rl.getTime();
 
     var mouse_pos = rl.Vector2.init(0, 0);
+
     const flowerpot_root_pos = rl.Vector2.init((screenWidth / 2 - 50) - 50, screenHeight - 100 - 5);
+
+    // Rotate Test
+    var angle: f32 = 0.0;
 
     // Main game loop
     while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -99,7 +103,15 @@ pub fn main() !void {
         // Flowerstem
         rl.drawTextureV(flowerstem_texture, flowerpot_root_pos.add(rl.Vector2.init(0, -100)), rl.Color.white);
 
-        rl.drawTextureEx(flowerstem_texture, flowerpot_root_pos.add(rl.Vector2.init(83, -203)), 45.0, 1.0, rl.Color.white);
+        // Rotate Test
+        angle += 1.0;
+        if (angle >= 360.0) {
+            angle = 0.0;
+        }
+        const new_pos_x: f32 = flowerpot_root_pos.x + 50;
+        const new_pos_y: f32 = flowerpot_root_pos.y - 150;
+        rl.drawTexturePro(flowerstem_texture, rl.Rectangle.init(0, 0, 100, 100), rl.Rectangle.init(new_pos_x, new_pos_y, 100, 100), rl.Vector2.init(50, 50), angle, rl.Color.white);
+        // End Rotate Test
 
         // Timestamp at the top
         rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
@@ -121,7 +133,7 @@ fn get_timestamp(buffer: []u8) void {
     _ = ctime.strftime(buffer.ptr, buffer.len, "%Y.%m.%d %H:%M:%S", timeinfo);
 }
 
-fn creat_flowers(alloc: std.mem.Allocator) !std.ArrayList(Flower) {
+fn create_flowers(alloc: std.mem.Allocator) !std.ArrayList(Flower) {
     var flowers = std.ArrayList(Flower).init(alloc);
 
     try flowers.append(Flower{ .name = try alloc.dupe(u8, "Rose"), .description = try alloc.dupe(u8, "Red"), .price = 1.0, .image = try alloc.dupe(u8, "resources/r.png") });
