@@ -5,7 +5,9 @@ const ctime = @cImport({
 });
 const http = @import("http.zig");
 
-const PI = 3.14159;
+const PI = 3.14159265358979323846;
+const DEG2RAD = (PI / 180.0);
+const RAD2DEG = (180.0 / PI);
 
 const Flower = struct {
     name: []u8,
@@ -56,7 +58,7 @@ pub fn main() !void {
         defer rl.unloadTexture(flowerpot_texture);
         rl.unloadImage(flowerpot_img);
         // Flowerstem
-        const flowerstem_img = try rl.loadImage("resources/flower_stem_01.png");
+        const flowerstem_img = try rl.loadImage("resources/test.png");
         const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
         defer rl.unloadTexture(flowerstem_texture);
         rl.unloadImage(flowerstem_img);
@@ -126,6 +128,7 @@ pub fn main() !void {
             const new_pos_x: f32 = flowerpot_root_pos.x + 50;
             const new_pos_y: f32 = flowerpot_root_pos.y - 150;
             rl.drawTexturePro(flowerstem_texture, rl.Rectangle.init(0, 0, 100, 100), rl.Rectangle.init(new_pos_x, new_pos_y, 100, 100), rl.Vector2.init(50, 50), angle, rl.Color.white);
+            mark_corners_pro(rl.Vector2.init(new_pos_x, new_pos_y), angle, 100);
             // End Rotate Test
 
             // Timestamp at the top
@@ -173,6 +176,34 @@ fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) voi
         alloc.free(f.image);
     }
     flowers.deinit();
+}
+fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
+    const pic_lenght_f32: f32 = @as(f32, @floatFromInt(pic_lenght));
+    const pic_lenght_half_f32: f32 = @as(f32, @floatFromInt(pic_lenght)) / 2.0;
+
+    const sinRotation = @sin(angle * DEG2RAD);
+    const cosRotation = @cos(angle * DEG2RAD);
+    const x = pos.x;
+    const y = pos.y;
+    const dx = -pic_lenght_half_f32;
+    const dy = -pic_lenght_half_f32;
+
+    const topLeftx = x + dx * cosRotation - dy * sinRotation;
+    const topLefty = y + dx * sinRotation + dy * cosRotation;
+
+    const topRightx = x + (dx + pic_lenght_f32) * cosRotation - dy * sinRotation;
+    const topRighty = y + (dx + pic_lenght_f32) * sinRotation + dy * cosRotation;
+
+    const bottomLeftx = x + dx * cosRotation - (dy + pic_lenght_f32) * sinRotation;
+    const bottomLefty = y + dx * sinRotation + (dy + pic_lenght_f32) * cosRotation;
+
+    const bottomRightx = x + (dx + pic_lenght_f32) * cosRotation - (dy + pic_lenght_f32) * sinRotation;
+    const bottomRighty = y + (dx + pic_lenght_f32) * sinRotation + (dy + pic_lenght_f32) * cosRotation;
+
+    rl.drawCircleV(rl.Vector2.init(topLeftx, topLefty), 5, rl.Color.blue);
+    rl.drawCircleV(rl.Vector2.init(bottomLeftx, bottomLefty), 5, rl.Color.red);
+    rl.drawCircleV(rl.Vector2.init(topRightx, topRighty), 5, rl.Color.green);
+    rl.drawCircleV(rl.Vector2.init(bottomRightx, bottomRighty), 5, rl.Color.red);
 }
 
 /// Marks the corners of a square picture rotated inside a rectangle
