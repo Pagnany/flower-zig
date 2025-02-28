@@ -32,7 +32,13 @@ pub fn main() !void {
     {
         var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
         defer flower_stem_nodes.deinit();
-        try flower_stem_nodes.append(FlowerStemNode{ .id = 1, .is_root = true, .pos = rl.Vector2.init(0, 0), .angle = 0.0, .prev_id = 0 });
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 1,
+            .is_root = true,
+            .pos = rl.Vector2.init(0, 0),
+            .angle = 0.0,
+            .prev_id = 0,
+        });
 
         // ---- WINDOW SETUP ----
         const screenWidth = 1280;
@@ -115,10 +121,18 @@ pub fn main() !void {
             rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
             // Flowerpot
-            rl.drawTextureV(flowerpot_texture, flowerpot_root_pos, rl.Color.white);
+            rl.drawTextureV(
+                flowerpot_texture,
+                flowerpot_root_pos,
+                rl.Color.white,
+            );
 
             // Flowerstem
-            rl.drawTextureV(flowerstem_texture, flowerpot_root_pos.add(rl.Vector2.init(0, -100)), rl.Color.white);
+            rl.drawTextureV(
+                flowerstem_texture,
+                flowerpot_root_pos.add(rl.Vector2.init(0, -100)),
+                rl.Color.white,
+            );
 
             // Rotate Test
             angle += 1.0;
@@ -127,7 +141,14 @@ pub fn main() !void {
             }
             const new_pos_x: f32 = flowerpot_root_pos.x + 50;
             const new_pos_y: f32 = flowerpot_root_pos.y - 150;
-            rl.drawTexturePro(flowerstem_texture, rl.Rectangle.init(0, 0, 100, 100), rl.Rectangle.init(new_pos_x, new_pos_y, 100, 100), rl.Vector2.init(50, 50), angle, rl.Color.white);
+            rl.drawTexturePro(
+                flowerstem_texture,
+                rl.Rectangle.init(0, 0, 100, 100),
+                rl.Rectangle.init(new_pos_x, new_pos_y, 100, 100),
+                rl.Vector2.init(50, 50),
+                angle,
+                rl.Color.white,
+            );
             mark_corners_pro(rl.Vector2.init(new_pos_x, new_pos_y), angle, 100);
             // End Rotate Test
 
@@ -162,9 +183,24 @@ fn get_timestamp(buffer: []u8) void {
 fn create_flowers(alloc: std.mem.Allocator) !std.ArrayList(Flower) {
     var flowers = std.ArrayList(Flower).init(alloc);
 
-    try flowers.append(Flower{ .name = try alloc.dupe(u8, "Rose"), .description = try alloc.dupe(u8, "Red"), .price = 1.0, .image = try alloc.dupe(u8, "resources/r.png") });
-    try flowers.append(Flower{ .name = try alloc.dupe(u8, "Tulip"), .description = try alloc.dupe(u8, "Yellow"), .price = 1.5, .image = try alloc.dupe(u8, "resources/t.png") });
-    try flowers.append(Flower{ .name = try alloc.dupe(u8, "Sunflower"), .description = try alloc.dupe(u8, "Yellow"), .price = 2.0, .image = try alloc.dupe(u8, "resources/s.png") });
+    try flowers.append(Flower{
+        .name = try alloc.dupe(u8, "Rose"),
+        .description = try alloc.dupe(u8, "Red"),
+        .price = 1.0,
+        .image = try alloc.dupe(u8, "resources/r.png"),
+    });
+    try flowers.append(Flower{
+        .name = try alloc.dupe(u8, "Tulip"),
+        .description = try alloc.dupe(u8, "Yellow"),
+        .price = 1.5,
+        .image = try alloc.dupe(u8, "resources/t.png"),
+    });
+    try flowers.append(Flower{
+        .name = try alloc.dupe(u8, "Sunflower"),
+        .description = try alloc.dupe(u8, "Yellow"),
+        .price = 2.0,
+        .image = try alloc.dupe(u8, "resources/s.png"),
+    });
 
     return flowers;
 }
@@ -177,6 +213,7 @@ fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) voi
     }
     flowers.deinit();
 }
+
 fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
     const pic_lenght_f32: f32 = @as(f32, @floatFromInt(pic_lenght));
     const pic_lenght_half_f32: f32 = @as(f32, @floatFromInt(pic_lenght)) / 2.0;
@@ -203,7 +240,7 @@ fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
     rl.drawCircleV(rl.Vector2.init(topLeftx, topLefty), 5, rl.Color.blue);
     rl.drawCircleV(rl.Vector2.init(bottomLeftx, bottomLefty), 5, rl.Color.red);
     rl.drawCircleV(rl.Vector2.init(topRightx, topRighty), 5, rl.Color.green);
-    rl.drawCircleV(rl.Vector2.init(bottomRightx, bottomRighty), 5, rl.Color.red);
+    rl.drawCircleV(rl.Vector2.init(bottomRightx, bottomRighty), 5, rl.Color.yellow);
 }
 
 /// Marks the corners of a square picture rotated inside a rectangle
