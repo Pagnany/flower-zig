@@ -237,10 +237,15 @@ fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
     const bottomRightx = x + (dx + pic_lenght_f32) * cosRotation - (dy + pic_lenght_f32) * sinRotation;
     const bottomRighty = y + (dx + pic_lenght_f32) * sinRotation + (dy + pic_lenght_f32) * cosRotation;
 
-    rl.drawCircleV(rl.Vector2.init(topLeftx, topLefty), 5, rl.Color.blue);
-    rl.drawCircleV(rl.Vector2.init(bottomLeftx, bottomLefty), 5, rl.Color.red);
-    rl.drawCircleV(rl.Vector2.init(topRightx, topRighty), 5, rl.Color.green);
-    rl.drawCircleV(rl.Vector2.init(bottomRightx, bottomRighty), 5, rl.Color.yellow);
+    const topLeft = rl.Vector2.init(topLeftx, topLefty);
+    const topRight = rl.Vector2.init(topRightx, topRighty);
+    const bottomLeft = rl.Vector2.init(bottomLeftx, bottomLefty);
+    const bottomRight = rl.Vector2.init(bottomRightx, bottomRighty);
+
+    const topMiddle = topLeft.add(topRight.subtract(topLeft).divide(rl.Vector2.init(2.0, 2.0)));
+    rl.drawCircleV(topMiddle, 5, rl.Color.black);
+    const bottomMiddle = bottomLeft.add(bottomRight.subtract(bottomLeft).divide(rl.Vector2.init(2.0, 2.0)));
+    rl.drawCircleV(bottomMiddle, 5, rl.Color.black);
 }
 
 /// Marks the corners of a square picture rotated inside a rectangle
