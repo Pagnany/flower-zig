@@ -30,15 +30,6 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     {
-        var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
-        defer flower_stem_nodes.deinit();
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 1,
-            .is_root = true,
-            .pos = rl.Vector2.init(0, 0),
-            .angle = 0.0,
-            .prev_id = 0,
-        });
 
         // ---- WINDOW SETUP ----
         const screenWidth = 1280;
@@ -64,11 +55,29 @@ pub fn main() !void {
         defer rl.unloadTexture(flowerpot_texture);
         rl.unloadImage(flowerpot_img);
         // Flowerstem
-        const flowerstem_img = try rl.loadImage("resources/test.png");
+        const flowerstem_img = try rl.loadImage("resources/flower_stem_01.png");
         const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
         defer rl.unloadTexture(flowerstem_texture);
         rl.unloadImage(flowerstem_img);
         // ---- END TEXTURES ----
+
+        // Flower List
+        var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
+        defer flower_stem_nodes.deinit();
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 1,
+            .is_root = true,
+            .pos = null,
+            .angle = 0.0,
+            .prev_id = 0,
+        });
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 2,
+            .is_root = false,
+            .pos = null,
+            .angle = 30.0,
+            .prev_id = 1,
+        });
 
         // Timestamp
         var timestamp_update = rl.getTime();
@@ -83,9 +92,6 @@ pub fn main() !void {
         var mouse_pos = rl.Vector2.init(0, 0);
 
         const flowerpot_root_pos = rl.Vector2.init((screenWidth / 2 - 50) - 50, screenHeight - 100 - 5);
-
-        // Rotate Test
-        var angle: f32 = 0.0;
 
         // Main game loop
         while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -128,29 +134,28 @@ pub fn main() !void {
             );
 
             // Flowerstem
-            rl.drawTextureV(
-                flowerstem_texture,
-                flowerpot_root_pos.add(rl.Vector2.init(0, -100)),
-                rl.Color.white,
-            );
-
-            // Rotate Test
-            angle += 1.0;
-            if (angle >= 360.0) {
-                angle = 0.0;
+            for (flower_stem_nodes.items) |*node| {
+                if (node.pos == null) {
+                    node.pos = rl.Vector2.init(100, 100);
+                    const topMiddle, const bottomMiddle = mark_corners_pro(node.pos.?, node.angle, 100);
+                    std.debug.print("TopMiddle: x:{d}, y:{d}\n", .{ topMiddle.x, topMiddle.y });
+                    std.debug.print("BottomMiddle: x:{d}, y:{d}\n", .{ bottomMiddle.x, bottomMiddle.y });
+                } else {
+                    rl.drawTexturePro(
+                        flowerstem_texture,
+                        rl.Rectangle.init(0, 0, 100, 100),
+                        rl.Rectangle.init(
+                            node.pos.?.x,
+                            node.pos.?.y,
+                            100,
+                            100,
+                        ),
+                        rl.Vector2.init(50, 50),
+                        node.angle,
+                        rl.Color.white,
+                    );
+                }
             }
-            const new_pos_x: f32 = flowerpot_root_pos.x + 50;
-            const new_pos_y: f32 = flowerpot_root_pos.y - 150;
-            rl.drawTexturePro(
-                flowerstem_texture,
-                rl.Rectangle.init(0, 0, 100, 100),
-                rl.Rectangle.init(new_pos_x, new_pos_y, 100, 100),
-                rl.Vector2.init(50, 50),
-                angle,
-                rl.Color.white,
-            );
-            mark_corners_pro(rl.Vector2.init(new_pos_x, new_pos_y), angle, 100);
-            // End Rotate Test
 
             // Timestamp at the top
             rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
@@ -214,7 +219,7 @@ fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) voi
     flowers.deinit();
 }
 
-fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
+fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) struct { rl.Vector2, rl.Vector2 } {
     const pic_lenght_f32: f32 = @as(f32, @floatFromInt(pic_lenght));
     const pic_lenght_half_f32: f32 = @as(f32, @floatFromInt(pic_lenght)) / 2.0;
 
@@ -242,10 +247,12 @@ fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) void {
     const bottomLeft = rl.Vector2.init(bottomLeftx, bottomLefty);
     const bottomRight = rl.Vector2.init(bottomRightx, bottomRighty);
 
-    const topMiddle = topLeft.add(topRight.subtract(topLeft).divide(rl.Vector2.init(2.0, 2.0)));
+    const topMiddle = topLeft.add(topRight.subtract(topLeft).multiply(rl.Vector2.init(0.5, 0.5)));
     rl.drawCircleV(topMiddle, 5, rl.Color.black);
-    const bottomMiddle = bottomLeft.add(bottomRight.subtract(bottomLeft).divide(rl.Vector2.init(2.0, 2.0)));
+    const bottomMiddle = bottomLeft.add(bottomRight.subtract(bottomLeft).multiply(rl.Vector2.init(0.5, 0.5)));
     rl.drawCircleV(bottomMiddle, 5, rl.Color.black);
+
+    return .{ topMiddle, bottomMiddle };
 }
 
 /// Marks the corners of a square picture rotated inside a rectangle
