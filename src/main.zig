@@ -20,6 +20,8 @@ const FlowerStemNode = struct {
     id: u32,
     is_root: bool,
     pos: ?rl.Vector2,
+    top_middle: ?rl.Vector2,
+    bottom_middle: ?rl.Vector2,
     angle: f32,
     prev_id: u32,
 };
@@ -68,6 +70,8 @@ pub fn main() !void {
             .id = 1,
             .is_root = true,
             .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
             .angle = 0.0,
             .prev_id = 0,
         });
@@ -75,6 +79,8 @@ pub fn main() !void {
             .id = 2,
             .is_root = false,
             .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
             .angle = 30.0,
             .prev_id = 1,
         });
@@ -137,9 +143,7 @@ pub fn main() !void {
             for (flower_stem_nodes.items) |*node| {
                 if (node.pos == null) {
                     node.pos = rl.Vector2.init(100, 100);
-                    const topMiddle, const bottomMiddle = mark_corners_pro(node.pos.?, node.angle, 100);
-                    std.debug.print("TopMiddle: x:{d}, y:{d}\n", .{ topMiddle.x, topMiddle.y });
-                    std.debug.print("BottomMiddle: x:{d}, y:{d}\n", .{ bottomMiddle.x, bottomMiddle.y });
+                    node.top_middle, node.bottom_middle = mark_corners_pro(node.pos.?, node.angle, 100);
                 } else {
                     rl.drawTexturePro(
                         flowerstem_texture,
@@ -248,9 +252,7 @@ fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) struct { rl.Ve
     const bottomRight = rl.Vector2.init(bottomRightx, bottomRighty);
 
     const topMiddle = topLeft.add(topRight.subtract(topLeft).multiply(rl.Vector2.init(0.5, 0.5)));
-    rl.drawCircleV(topMiddle, 5, rl.Color.black);
     const bottomMiddle = bottomLeft.add(bottomRight.subtract(bottomLeft).multiply(rl.Vector2.init(0.5, 0.5)));
-    rl.drawCircleV(bottomMiddle, 5, rl.Color.black);
 
     return .{ topMiddle, bottomMiddle };
 }
