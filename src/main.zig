@@ -22,6 +22,7 @@ const FlowerStemNode = struct {
     pos: ?rl.Vector2,
     top_middle: ?rl.Vector2,
     bottom_middle: ?rl.Vector2,
+    texture: ?rl.Texture2D,
     angle: f32,
     prev_id: u32,
 };
@@ -72,6 +73,7 @@ pub fn main() !void {
             .pos = null,
             .top_middle = null,
             .bottom_middle = null,
+            .texture = flowerstem_texture,
             .angle = 0.0,
             .prev_id = 0,
         });
@@ -81,6 +83,7 @@ pub fn main() !void {
             .pos = null,
             .top_middle = null,
             .bottom_middle = null,
+            .texture = flowerstem_texture,
             .angle = 30.0,
             .prev_id = 1,
         });
@@ -146,7 +149,7 @@ pub fn main() !void {
                     node.top_middle, node.bottom_middle = mark_corners_pro(node.pos.?, node.angle, 100);
                 } else {
                     rl.drawTexturePro(
-                        flowerstem_texture,
+                        node.texture.?,
                         rl.Rectangle.init(0, 0, 100, 100),
                         rl.Rectangle.init(
                             node.pos.?.x,
