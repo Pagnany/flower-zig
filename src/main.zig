@@ -87,6 +87,26 @@ pub fn main() !void {
             .angle = 30.0,
             .prev_id = 1,
         });
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 3,
+            .is_root = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = flowerstem_texture,
+            .angle = -50.0,
+            .prev_id = 1,
+        });
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 4,
+            .is_root = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = flowerstem_texture,
+            .angle = 10.0,
+            .prev_id = 2,
+        });
 
         // Timestamp
         var timestamp_update = rl.getTime();
@@ -135,34 +155,30 @@ pub fn main() !void {
             rl.drawRectangle(screenWidth - 100, 260, 100, 100, rl.Color.red);
             rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
+            // Flowerstem
+            calculate_node_pos(flowerpot_root_pos, flower_stem_nodes);
+            for (flower_stem_nodes.items) |*node| {
+                rl.drawTexturePro(
+                    node.texture.?,
+                    rl.Rectangle.init(0, 0, 100, 100),
+                    rl.Rectangle.init(
+                        node.pos.?.x,
+                        node.pos.?.y,
+                        100,
+                        100,
+                    ),
+                    rl.Vector2.init(50, 50),
+                    node.angle,
+                    rl.Color.white,
+                );
+            }
+
             // Flowerpot
             rl.drawTextureV(
                 flowerpot_texture,
                 flowerpot_root_pos,
                 rl.Color.white,
             );
-
-            // Flowerstem
-            for (flower_stem_nodes.items) |*node| {
-                if (node.pos == null) {
-                    node.pos = rl.Vector2.init(100, 100);
-                    node.top_middle, node.bottom_middle = mark_corners_pro(node.pos.?, node.angle, 100);
-                } else {
-                    rl.drawTexturePro(
-                        node.texture.?,
-                        rl.Rectangle.init(0, 0, 100, 100),
-                        rl.Rectangle.init(
-                            node.pos.?.x,
-                            node.pos.?.y,
-                            100,
-                            100,
-                        ),
-                        rl.Vector2.init(50, 50),
-                        node.angle,
-                        rl.Color.white,
-                    );
-                }
-            }
 
             // Timestamp at the top
             rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
@@ -288,4 +304,27 @@ fn mark_corners(pos: rl.Vector2, angle: i32, pic_lenght: i32) void {
     rl.drawCircleV(middle_left, 5, rl.Color.red);
     const middle_right = top_right.add(bot_right).divide(rl.Vector2.init(2, 2));
     rl.drawCircleV(middle_right, 5, rl.Color.red);
+}
+
+fn calculate_node_pos(flowerpot_root: rl.Vector2, flower_nodes: std.ArrayList(FlowerStemNode)) void {
+    for (flower_nodes.items) |*node| {
+        if (node.pos == null) {
+            // Distance between bottom middle and root pos
+            const temp_vec = rl.Vector2.init(0, 0);
+            _, node.bottom_middle = mark_corners_pro(temp_vec, node.angle, 100);
+            const bot_mid_vec = temp_vec.subtract(node.bottom_middle.?);
+            if (node.is_root) {
+                node.pos = flowerpot_root.add(rl.Vector2.init(50, 0)).add(bot_mid_vec);
+            } else {
+                for (flower_nodes.items) |prev_node| {
+                    if (prev_node.id == node.prev_id) {
+                        node.pos = prev_node.top_middle.?.add(bot_mid_vec);
+                        break;
+                    }
+                }
+            }
+            // Put Final Vecs in node
+            node.top_middle, node.bottom_middle = mark_corners_pro(node.pos.?, node.angle, 100);
+        }
+    }
 }
