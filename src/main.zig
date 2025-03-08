@@ -62,6 +62,11 @@ pub fn main() !void {
         const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
         defer rl.unloadTexture(flowerstem_texture);
         rl.unloadImage(flowerstem_img);
+        // Test
+        const test_img = try rl.loadImage("resources/test.png");
+        const test_texture = try rl.loadTextureFromImage(test_img);
+        defer rl.unloadTexture(test_texture);
+        rl.unloadImage(test_img);
         // ---- END TEXTURES ----
 
         // Flower List
@@ -121,6 +126,7 @@ pub fn main() !void {
         var mouse_pos = rl.Vector2.init(0, 0);
 
         const flowerpot_root_pos = rl.Vector2.init((screenWidth / 2 - 50) - 50, screenHeight - 100 - 5);
+        calculate_node_pos(flowerpot_root_pos, flower_stem_nodes);
 
         // Main game loop
         while (!rl.windowShouldClose()) { // Detect window close button or ESC key
@@ -156,7 +162,6 @@ pub fn main() !void {
             rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
             // Flowerstem
-            calculate_node_pos(flowerpot_root_pos, flower_stem_nodes);
             for (flower_stem_nodes.items) |*node| {
                 rl.drawTexturePro(
                     node.texture.?,
@@ -171,6 +176,29 @@ pub fn main() !void {
                     node.angle,
                     rl.Color.white,
                 );
+                if (isPointInsideRotatedRect(
+                    mouse_pos.x,
+                    mouse_pos.y,
+                    node.pos.?.x,
+                    node.pos.?.y,
+                    100.0,
+                    100.0,
+                    node.angle,
+                )) {
+                    rl.drawTexturePro(
+                        test_texture,
+                        rl.Rectangle.init(0, 0, 100, 100),
+                        rl.Rectangle.init(
+                            node.pos.?.x,
+                            node.pos.?.y,
+                            100,
+                            100,
+                        ),
+                        rl.Vector2.init(50, 50),
+                        node.angle,
+                        rl.Color.gray,
+                    );
+                }
             }
 
             // Flowerpot
@@ -327,4 +355,32 @@ fn calculate_node_pos(flowerpot_root: rl.Vector2, flower_nodes: std.ArrayList(Fl
             node.top_middle, node.bottom_middle = mark_corners_pro(node.pos.?, node.angle, 100);
         }
     }
+}
+
+fn isPointInsideRotatedRect(
+    px: f32,
+    py: f32,
+    cx: f32,
+    cy: f32,
+    width: f32,
+    height: f32,
+    rotation_degrees: f32,
+) bool {
+    const theta = rotation_degrees * DEG2RAD;
+
+    const cos_theta = @cos(theta);
+    const sin_theta = @sin(theta);
+
+    // Translate point to rectangle-local coordinates
+    const translated_x = px - cx;
+    const translated_y = py - cy;
+
+    // Rotate point by the inverse of the rectangle's rotation
+    const rotated_x = translated_x * cos_theta + translated_y * sin_theta;
+    const rotated_y = -translated_x * sin_theta + translated_y * cos_theta;
+
+    const half_width = width / 2.0;
+    const half_height = height / 2.0;
+
+    return rotated_x <= half_width and rotated_y <= half_height;
 }
