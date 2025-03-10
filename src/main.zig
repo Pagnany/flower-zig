@@ -382,5 +382,5 @@ fn isPointInsideRotatedRect(
     const half_width = width / 2.0;
     const half_height = height / 2.0;
 
-    return rotated_x <= half_width and rotated_y <= half_height;
+    return @abs(rotated_x) <= half_width and @abs(rotated_y) <= half_height;
 }
