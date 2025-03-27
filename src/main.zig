@@ -112,6 +112,16 @@ pub fn main() !void {
             .angle = 10.0,
             .prev_id = 2,
         });
+        try flower_stem_nodes.append(FlowerStemNode{
+            .id = 5,
+            .is_root = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = flowerstem_texture,
+            .angle = -170.0,
+            .prev_id = 3,
+        });
 
         // Timestamp
         var timestamp_update = rl.getTime();
@@ -161,6 +171,11 @@ pub fn main() !void {
             rl.drawRectangle(screenWidth - 100, 260, 100, 100, rl.Color.red);
             rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
+            // Flowerstem Connections
+            for (flower_stem_nodes.items) |*node| {
+                rl.drawCircleV(node.bottom_middle.?, 5, rl.Color.dark_green);
+            }
+
             // Flowerstem
             for (flower_stem_nodes.items) |*node| {
                 rl.drawTexturePro(
@@ -176,6 +191,12 @@ pub fn main() !void {
                     node.angle,
                     rl.Color.white,
                 );
+            }
+
+            var selection: ?rl.Vector2 = null;
+
+            // Check for collision with flowerstem
+            for (flower_stem_nodes.items) |*node| {
                 if (isPointInsideRotatedRect(
                     mouse_pos.x,
                     mouse_pos.y,
@@ -185,20 +206,41 @@ pub fn main() !void {
                     100.0,
                     node.angle,
                 )) {
-                    rl.drawTexturePro(
-                        test_texture,
-                        rl.Rectangle.init(0, 0, 100, 100),
-                        rl.Rectangle.init(
-                            node.pos.?.x,
-                            node.pos.?.y,
-                            100,
-                            100,
-                        ),
-                        rl.Vector2.init(50, 50),
-                        node.angle,
-                        rl.Color.gray,
-                    );
+                    if (selection == null) {
+                        selection = node.pos;
+                    } else {
+                        // calculate distances to mouse
+                        const dist1 = rl.Vector2.init(
+                            selection.?.x - mouse_pos.x,
+                            selection.?.y - mouse_pos.y,
+                        ).length();
+
+                        const dist2 = rl.Vector2.init(
+                            node.pos.?.x - mouse_pos.x,
+                            node.pos.?.y - mouse_pos.y,
+                        ).length();
+
+                        if (dist2 < dist1) {
+                            selection = node.pos;
+                        }
+                    }
                 }
+            }
+
+            if (selection != null) {
+                rl.drawTexturePro(
+                    test_texture,
+                    rl.Rectangle.init(0, 0, 100, 100),
+                    rl.Rectangle.init(
+                        selection.?.x,
+                        selection.?.y,
+                        100,
+                        100,
+                    ),
+                    rl.Vector2.init(50, 50),
+                    0.0,
+                    rl.Color.gray,
+                );
             }
 
             // Flowerpot
