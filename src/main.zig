@@ -176,8 +176,10 @@ pub fn main() !void {
                 rl.drawCircleV(node.bottom_middle.?, 5, rl.Color.dark_green);
             }
 
+            var stem_select: ?rl.Vector2 = null;
             // Flowerstem
             for (flower_stem_nodes.items) |*node| {
+                // Draw Flowerstem
                 rl.drawTexturePro(
                     node.texture.?,
                     rl.Rectangle.init(0, 0, 100, 100),
@@ -191,12 +193,8 @@ pub fn main() !void {
                     node.angle,
                     rl.Color.white,
                 );
-            }
 
-            var selection: ?rl.Vector2 = null;
-
-            // Check for collision with flowerstem
-            for (flower_stem_nodes.items) |*node| {
+                // check for collision mouse with flowerstem
                 if (isPointInsideRotatedRect(
                     mouse_pos.x,
                     mouse_pos.y,
@@ -206,13 +204,13 @@ pub fn main() !void {
                     100.0,
                     node.angle,
                 )) {
-                    if (selection == null) {
-                        selection = node.pos;
+                    if (stem_select == null) {
+                        stem_select = node.pos;
                     } else {
                         // calculate distances to mouse
                         const dist1 = rl.Vector2.init(
-                            selection.?.x - mouse_pos.x,
-                            selection.?.y - mouse_pos.y,
+                            stem_select.?.x - mouse_pos.x,
+                            stem_select.?.y - mouse_pos.y,
                         ).length();
 
                         const dist2 = rl.Vector2.init(
@@ -221,19 +219,20 @@ pub fn main() !void {
                         ).length();
 
                         if (dist2 < dist1) {
-                            selection = node.pos;
+                            stem_select = node.pos;
                         }
                     }
                 }
             }
 
-            if (selection != null) {
+            // Draw Selected Flowerstem
+            if (stem_select != null) {
                 rl.drawTexturePro(
                     test_texture,
                     rl.Rectangle.init(0, 0, 100, 100),
                     rl.Rectangle.init(
-                        selection.?.x,
-                        selection.?.y,
+                        stem_select.?.x,
+                        stem_select.?.y,
                         100,
                         100,
                     ),
