@@ -9,13 +9,6 @@ const PI = 3.14159265358979323846;
 const DEG2RAD = (PI / 180.0);
 const RAD2DEG = (180.0 / PI);
 
-const Flower = struct {
-    name: []u8,
-    description: []u8,
-    price: f32,
-    image: []u8,
-};
-
 const FlowerStemNode = struct {
     id: u32,
     is_root: bool,
@@ -62,11 +55,6 @@ pub fn main() !void {
         const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
         defer rl.unloadTexture(flowerstem_texture);
         rl.unloadImage(flowerstem_img);
-        // Test
-        const test_img = try rl.loadImage("resources/test.png");
-        const test_texture = try rl.loadTextureFromImage(test_img);
-        defer rl.unloadTexture(test_texture);
-        rl.unloadImage(test_img);
         // ---- END TEXTURES ----
 
         // Flower List
@@ -227,19 +215,7 @@ pub fn main() !void {
 
             // Draw Selected Flowerstem
             if (stem_select != null) {
-                rl.drawTexturePro(
-                    test_texture,
-                    rl.Rectangle.init(0, 0, 100, 100),
-                    rl.Rectangle.init(
-                        stem_select.?.x,
-                        stem_select.?.y,
-                        100,
-                        100,
-                    ),
-                    rl.Vector2.init(50, 50),
-                    0.0,
-                    rl.Color.gray,
-                );
+                rl.drawCircleV(stem_select.?, 5, rl.Color.red);
             }
 
             // Flowerpot
@@ -266,6 +242,33 @@ pub fn main() !void {
     }
 }
 
+pub fn write_read_file(alloc: std.mem.Allocator) !void {
+    const file_name = "save/save01.json";
+
+    // Create directory if it doesn't exist
+    try std.fs.cwd().makePath("save");
+
+    var file = try std.fs.cwd().createFile(file_name, .{});
+    defer file.close();
+
+    var json_data = std.ArrayList(u8).init(alloc);
+    defer json_data.deinit();
+    for (0..200_000) |_| {
+        try json_data.appendSlice("test\n");
+    }
+
+    try file.writeAll(json_data.items);
+
+    var file_read = try std.fs.cwd().openFile(file_name, .{});
+    defer file_read.close();
+
+    // Up to 1GB
+    const file_contents = try file_read.readToEndAlloc(alloc, std.math.pow(usize, 1024, 3) * 1);
+    defer alloc.free(file_contents);
+
+    std.debug.print("File contents: {s}\n", .{file_contents});
+}
+
 fn get_timestamp(buffer: []u8) void {
     var now: ctime.time_t = undefined;
     _ = ctime.time(&now);
@@ -275,40 +278,6 @@ fn get_timestamp(buffer: []u8) void {
     @memset(buffer, 0);
 
     _ = ctime.strftime(buffer.ptr, buffer.len, "%Y.%m.%d %H:%M:%S", timeinfo);
-}
-
-fn create_flowers(alloc: std.mem.Allocator) !std.ArrayList(Flower) {
-    var flowers = std.ArrayList(Flower).init(alloc);
-
-    try flowers.append(Flower{
-        .name = try alloc.dupe(u8, "Rose"),
-        .description = try alloc.dupe(u8, "Red"),
-        .price = 1.0,
-        .image = try alloc.dupe(u8, "resources/r.png"),
-    });
-    try flowers.append(Flower{
-        .name = try alloc.dupe(u8, "Tulip"),
-        .description = try alloc.dupe(u8, "Yellow"),
-        .price = 1.5,
-        .image = try alloc.dupe(u8, "resources/t.png"),
-    });
-    try flowers.append(Flower{
-        .name = try alloc.dupe(u8, "Sunflower"),
-        .description = try alloc.dupe(u8, "Yellow"),
-        .price = 2.0,
-        .image = try alloc.dupe(u8, "resources/s.png"),
-    });
-
-    return flowers;
-}
-
-fn destroy_flowers(alloc: std.mem.Allocator, flowers: std.ArrayList(Flower)) void {
-    for (flowers.items) |f| {
-        alloc.free(f.name);
-        alloc.free(f.description);
-        alloc.free(f.image);
-    }
-    flowers.deinit();
 }
 
 fn mark_corners_pro(pos: rl.Vector2, angle: f32, pic_lenght: i32) struct { rl.Vector2, rl.Vector2 } {

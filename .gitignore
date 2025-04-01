@@ -5,6 +5,7 @@ zig-out/
 /build/
 /build-*/
 /docgen_tmp/
+/save/
 
 #Old zig cache
 zig-cache/
