@@ -34,11 +34,9 @@ pub fn main() !void {
         // const screenHeight = 1080;
 
         // DPI Scaling
-        // One of these should work
-        // rl.setConfigFlags(
-        //     @enumFromInt(@intFromEnum(rl.ConfigFlags.flag_window_highdpi)),
-        // );
-        // rl.setConfigFlags(.{ .window_highdpi = true });
+        rl.setConfigFlags(.{
+            .window_highdpi = true,
+        });
 
         rl.initWindow(screenWidth, screenHeight, "Flower");
         defer rl.closeWindow();
