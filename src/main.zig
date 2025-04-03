@@ -33,6 +33,7 @@ pub fn main() !void {
         // const screenWidth = 1920;
         // const screenHeight = 1080;
 
+        rl.setConfigFlags(.{ .window_highdpi = true });
         rl.initWindow(screenWidth, screenHeight, "Flower");
         defer rl.closeWindow();
 
