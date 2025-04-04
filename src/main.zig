@@ -118,11 +118,10 @@ pub fn main() !void {
 
         // Timestamp
         var timestamp_update = rl.getTime();
-        var buffer: [24]u8 = undefined;
-        const time_buffer: []u8 = buffer[0..buffer.len];
+        var timestamp_buffer: [24]u8 = undefined;
+        const time_buffer: []u8 = timestamp_buffer[0..];
         get_timestamp(time_buffer);
-        var timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time_buffer);
-        defer allocator.free(timestamp);
+        var timestamp = time_buffer[0 .. time_buffer.len - 1 :0];
 
         var prev_loop_time = rl.getTime();
 
@@ -141,9 +140,8 @@ pub fn main() !void {
             // ---- UPDATE ----
             // Timestamp
             if (timestamp_update + 1 < loop_time) {
-                allocator.free(timestamp);
                 get_timestamp(time_buffer);
-                timestamp = try std.mem.Allocator.dupeZ(allocator, u8, time_buffer);
+                timestamp = time_buffer[0 .. time_buffer.len - 1 :0];
                 timestamp_update = loop_time;
             }
 
@@ -258,11 +256,17 @@ pub fn write_read_file(alloc: std.mem.Allocator) !void {
 
     var json_data = std.ArrayList(u8).init(alloc);
     defer json_data.deinit();
-    for (0..200_000) |_| {
+    for (0..20) |_| {
         try json_data.appendSlice("test\n");
     }
 
+    // Zig
     try file.writeAll(json_data.items);
+
+    // Raylib
+    // try json_data.append(0);
+    // const temp: [:0]u8 = json_data.items[0 .. json_data.items.len - 1 :0];
+    // _ = rl.saveFileText(file_name, temp);
 
     var file_read = try std.fs.cwd().openFile(file_name, .{});
     defer file_read.close();
