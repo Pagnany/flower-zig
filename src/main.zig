@@ -20,6 +20,15 @@ const FlowerStemNode = struct {
     prev_id: u32,
 };
 
+const UiElement = struct {
+    id: u32,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    texture: ?rl.Texture2D,
+};
+
 pub fn main() !void {
     // const allocator = std.heap.c_allocator;
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -34,9 +43,9 @@ pub fn main() !void {
         // const screenHeight = 1080;
 
         // DPI Scaling
-        rl.setConfigFlags(.{
-            .window_highdpi = true,
-        });
+        // rl.setConfigFlags(.{
+        //     .window_highdpi = true,
+        // });
 
         rl.initWindow(screenWidth, screenHeight, "Flower");
         defer rl.closeWindow();
@@ -116,6 +125,26 @@ pub fn main() !void {
             .prev_id = 3,
         });
 
+        // --- UI ELEMENTS ---
+        var ui_elements = std.ArrayList(UiElement).init(allocator);
+        defer ui_elements.deinit();
+        try ui_elements.append(UiElement{
+            .id = 1,
+            .x = screenWidth - 100.0,
+            .y = 50.0,
+            .width = 100.0,
+            .height = 100.0,
+            .texture = watering_can_texture,
+        });
+        try ui_elements.append(UiElement{
+            .id = 2,
+            .x = screenWidth - 100.0,
+            .y = 155.0,
+            .width = 100.0,
+            .height = 100.0,
+            .texture = watering_can_texture,
+        });
+
         // Timestamp
         var timestamp_update = rl.getTime();
         var timestamp_buffer: [24]u8 = undefined;
@@ -147,7 +176,19 @@ pub fn main() !void {
 
             // Mouse input
             if (rl.isMouseButtonPressed(.left)) {
-                std.debug.print("Mouse left button pressed at x:{d}, y:{d}\n", .{ mouse_pos.x, mouse_pos.y });
+                // std.debug.print(
+                //     "Mouse left button pressed at x:{d}, y:{d}\n",
+                //     .{ mouse_pos.x, mouse_pos.y },
+                // );
+
+                // Check if UI Element is clicked
+                for (ui_elements.items) |*ui_element| {
+                    if (mouse_pos.x >= ui_element.x and mouse_pos.x <= ui_element.x + ui_element.width and
+                        mouse_pos.y >= ui_element.y and mouse_pos.y <= ui_element.y + ui_element.height)
+                    {
+                        std.debug.print("UI Element {d} clicked!\n", .{ui_element.id});
+                    }
+                }
             } else if (rl.isMouseButtonPressed(.middle)) {} else if (rl.isMouseButtonPressed(.right)) {}
             // ---- END UPDATE ----
 
@@ -155,12 +196,6 @@ pub fn main() !void {
             rl.beginDrawing();
             defer rl.endDrawing();
             rl.clearBackground(rl.Color.dark_gray);
-
-            // Overview Menu (Right)
-            rl.drawTexture(watering_can_texture, screenWidth - 100, 50, rl.Color.white);
-            rl.drawRectangle(screenWidth - 100, 155, 100, 100, rl.Color.red);
-            rl.drawRectangle(screenWidth - 100, 260, 100, 100, rl.Color.red);
-            rl.drawRectangle(screenWidth - 100, 365, 100, 100, rl.Color.red);
 
             // Flowerstem Connections
             for (flower_stem_nodes.items) |*node| {
@@ -227,6 +262,23 @@ pub fn main() !void {
                 flowerpot_root_pos,
                 rl.Color.white,
             );
+
+            // --- UI ---
+            for (ui_elements.items) |*ui_element| {
+                rl.drawTexturePro(
+                    ui_element.texture.?,
+                    rl.Rectangle.init(0, 0, 100, 100),
+                    rl.Rectangle.init(
+                        ui_element.x,
+                        ui_element.y,
+                        ui_element.width,
+                        ui_element.height,
+                    ),
+                    rl.Vector2.init(0, 0),
+                    0.0,
+                    rl.Color.white,
+                );
+            }
 
             // Timestamp at the top
             rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
