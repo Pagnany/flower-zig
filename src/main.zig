@@ -216,9 +216,14 @@ pub fn main() !void {
 
                 // Check if UI Element is clicked
                 for (ui_elements.items) |*ui_element| {
-                    if (mouse_pos.x >= ui_element.x and mouse_pos.x <= ui_element.x + ui_element.width and
-                        mouse_pos.y >= ui_element.y and mouse_pos.y <= ui_element.y + ui_element.height)
-                    {
+                    if (isPointInsideRect(
+                        mouse_pos.x,
+                        mouse_pos.y,
+                        ui_element.x,
+                        ui_element.y,
+                        ui_element.width,
+                        ui_element.height,
+                    )) {
                         std.debug.print("UI Element {d} clicked!\n", .{ui_element.id});
                     }
                 }
@@ -464,11 +469,22 @@ fn calculate_node_pos(flowerpot_root: rl.Vector2, flower_nodes: std.ArrayList(Fl
     }
 }
 
+fn isPointInsideRect(
+    px: f32,
+    py: f32,
+    rx: f32,
+    ry: f32,
+    width: f32,
+    height: f32,
+) bool {
+    return (px >= rx and px <= rx + width and py >= ry and py <= ry + height);
+}
+
 fn isPointInsideRotatedRect(
     px: f32,
     py: f32,
-    cx: f32,
-    cy: f32,
+    rx: f32,
+    ry: f32,
     width: f32,
     height: f32,
     rotation_degrees: f32,
@@ -479,8 +495,8 @@ fn isPointInsideRotatedRect(
     const sin_theta = @sin(theta);
 
     // Translate point to rectangle-local coordinates
-    const translated_x = px - cx;
-    const translated_y = py - cy;
+    const translated_x = px - rx;
+    const translated_y = py - ry;
 
     // Rotate point by the inverse of the rectangle's rotation
     const rotated_x = translated_x * cos_theta + translated_y * sin_theta;
