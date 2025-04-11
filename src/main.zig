@@ -231,13 +231,13 @@ pub fn main() !void {
             rl.clearBackground(rl.Color.dark_gray);
 
             // Flowerstem Connections
-            for (flower_stem_nodes.items) |*node| {
+            for (flower_stem_nodes.items) |node| {
                 rl.drawCircleV(node.bottom_middle.?, 5, rl.Color.dark_green);
             }
 
             var stem_select: ?rl.Vector2 = null;
             // Flowerstem
-            for (flower_stem_nodes.items) |*node| {
+            for (flower_stem_nodes.items) |node| {
                 // Draw Flowerstem
                 rl.drawTexturePro(
                     node.texture.?,
@@ -300,7 +300,7 @@ pub fn main() !void {
             );
 
             // --- UI ---
-            for (ui_elements.items) |*ui_element| {
+            for (ui_elements.items) |ui_element| {
                 rl.drawTexturePro(
                     ui_element.texture.?,
                     rl.Rectangle.init(0, 0, 100, 100),
