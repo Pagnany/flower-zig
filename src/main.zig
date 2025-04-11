@@ -12,6 +12,7 @@ const RAD2DEG = (180.0 / PI);
 const FlowerStemNode = struct {
     id: u32,
     is_root: bool,
+    is_leaf: bool,
     pos: ?rl.Vector2,
     top_middle: ?rl.Vector2,
     bottom_middle: ?rl.Vector2,
@@ -43,9 +44,9 @@ pub fn main() !void {
         // const screenHeight = 1080;
 
         // DPI Scaling
-        // rl.setConfigFlags(.{
-        //     .window_highdpi = true,
-        // });
+        rl.setConfigFlags(.{
+            .window_highdpi = true,
+        });
 
         rl.initWindow(screenWidth, screenHeight, "Flower");
         defer rl.closeWindow();
@@ -74,76 +75,108 @@ pub fn main() !void {
         // Flower List
         var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
         defer flower_stem_nodes.deinit();
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 1,
-            .is_root = true,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = flowerstem_texture,
-            .angle = 0.0,
-            .prev_id = 0,
-        });
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 2,
-            .is_root = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = flowerstem_texture,
-            .angle = 30.0,
-            .prev_id = 1,
-        });
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 3,
-            .is_root = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = flowerstem_texture,
-            .angle = -50.0,
-            .prev_id = 1,
-        });
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 4,
-            .is_root = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = flowerstem_texture,
-            .angle = 10.0,
-            .prev_id = 2,
-        });
-        try flower_stem_nodes.append(FlowerStemNode{
-            .id = 5,
-            .is_root = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = flowerstem_texture,
-            .angle = -170.0,
-            .prev_id = 3,
-        });
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 1,
+                .is_root = true,
+                .is_leaf = false,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = 0.0,
+                .prev_id = 0,
+            },
+        );
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 2,
+                .is_root = false,
+                .is_leaf = false,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = 30.0,
+                .prev_id = 1,
+            },
+        );
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 3,
+                .is_root = false,
+                .is_leaf = false,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = -50.0,
+                .prev_id = 1,
+            },
+        );
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 4,
+                .is_root = false,
+                .is_leaf = true,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = 10.0,
+                .prev_id = 2,
+            },
+        );
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 5,
+                .is_root = false,
+                .is_leaf = true,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = -170.0,
+                .prev_id = 3,
+            },
+        );
+        try flower_stem_nodes.append(
+            FlowerStemNode{
+                .id = 6,
+                .is_root = false,
+                .is_leaf = true,
+                .pos = null,
+                .top_middle = null,
+                .bottom_middle = null,
+                .texture = flowerstem_texture,
+                .angle = 90.0,
+                .prev_id = 2,
+            },
+        );
 
         // --- UI ELEMENTS ---
         var ui_elements = std.ArrayList(UiElement).init(allocator);
         defer ui_elements.deinit();
-        try ui_elements.append(UiElement{
-            .id = 1,
-            .x = screenWidth - 100.0,
-            .y = 50.0,
-            .width = 100.0,
-            .height = 100.0,
-            .texture = watering_can_texture,
-        });
-        try ui_elements.append(UiElement{
-            .id = 2,
-            .x = screenWidth - 100.0,
-            .y = 155.0,
-            .width = 100.0,
-            .height = 100.0,
-            .texture = watering_can_texture,
-        });
+        try ui_elements.append(
+            UiElement{
+                .id = 1,
+                .x = screenWidth - 100.0,
+                .y = 50.0,
+                .width = 100.0,
+                .height = 100.0,
+                .texture = watering_can_texture,
+            },
+        );
+        try ui_elements.append(
+            UiElement{
+                .id = 2,
+                .x = screenWidth - 100.0,
+                .y = 155.0,
+                .width = 100.0,
+                .height = 100.0,
+                .texture = watering_can_texture,
+            },
+        );
 
         // Timestamp
         var timestamp_update = rl.getTime();
@@ -164,7 +197,7 @@ pub fn main() !void {
             const loop_time = rl.getTime();
             const delta_time = loop_time - prev_loop_time;
             _ = delta_time;
-            mouse_pos = rl.getMousePosition();
+            mouse_pos = rl.getMousePosition().multiply(rl.getWindowScaleDPI());
 
             // ---- UPDATE ----
             // Timestamp
@@ -219,6 +252,9 @@ pub fn main() !void {
                     node.angle,
                     rl.Color.white,
                 );
+                if (node.is_leaf) {
+                    rl.drawCircleV(node.top_middle.?, 5, rl.Color.yellow);
+                }
 
                 // check for collision mouse with flowerstem
                 if (isPointInsideRotatedRect(
