@@ -196,9 +196,9 @@ pub fn main() !void {
         var info_box = InfoBox{
             .is_visible = false,
             .x = 10,
-            .y = 10,
-            .width = 300,
-            .height = 200,
+            .y = 30,
+            .width = 400,
+            .height = 660,
             .close_button_size = 20.0,
             .selected_stem = null,
         };
@@ -241,7 +241,8 @@ pub fn main() !void {
 
             // Mouse input
             if (rl.isMouseButtonPressed(.left)) {
-                // Check if UI Element is clicked
+                // std.debug.print("Mouse clicked at: {d} {d}\n", .{ mouse_pos.x, mouse_pos.y });
+
                 for (ui_elements.items) |*ui_element| {
                     if (isPointInsideRect(
                         mouse_pos.x,
@@ -399,6 +400,16 @@ pub fn main() !void {
             // Timestamp at the top
             rl.drawText(timestamp, screenWidth - 200, 10, 20, rl.Color.white);
             rl.drawFPS(10, 10);
+
+            // Wayland bug
+            // Window is larger than set
+            rl.drawRectangle(
+                0,
+                screenHeight,
+                screenWidth,
+                50,
+                rl.Color.black,
+            );
             // --- END DRAW ---
 
             prev_loop_time = loop_time;
