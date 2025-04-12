@@ -30,6 +30,20 @@ const UiElement = struct {
     texture: ?rl.Texture2D,
 };
 
+const InfoBox = struct {
+    is_visible: bool,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    close_button_size: f32,
+    selected_stem: ?*FlowerStemNode,
+};
+
+const CloseButton = struct {
+    size: i32,
+};
+
 pub fn main() !void {
     // const allocator = std.heap.c_allocator;
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -178,6 +192,21 @@ pub fn main() !void {
             },
         );
 
+        // Initialize the info box
+        var info_box = InfoBox{
+            .is_visible = false,
+            .x = 10,
+            .y = 10,
+            .width = 300,
+            .height = 200,
+            .close_button_size = 20.0,
+            .selected_stem = null,
+        };
+
+        const close_button = CloseButton{
+            .size = 20,
+        };
+
         // Timestamp
         var timestamp_update = rl.getTime();
         var timestamp_buffer: [24]u8 = undefined;
@@ -226,6 +255,35 @@ pub fn main() !void {
                     )) {
                         std.debug.print("UI Element {d} clicked!\n", .{ui_element.id});
                     }
+                }
+
+                // Check if a flower stem is clicked
+                for (flower_stem_nodes.items) |*node| {
+                    if (isPointInsideRotatedRect(
+                        mouse_pos.x,
+                        mouse_pos.y,
+                        node.pos.?.x,
+                        node.pos.?.y,
+                        100.0,
+                        100.0,
+                        node.angle,
+                    )) {
+                        info_box.is_visible = true;
+                        info_box.selected_stem = node;
+                    }
+                }
+
+                // Check if close button is clicked
+                if (info_box.is_visible and isPointInsideRect(
+                    mouse_pos.x,
+                    mouse_pos.y,
+                    @as(f32, @floatFromInt(info_box.x + info_box.width - close_button.size)),
+                    @as(f32, @floatFromInt(info_box.y)),
+                    @as(f32, @floatFromInt(close_button.size)),
+                    @as(f32, @floatFromInt(close_button.size)),
+                )) {
+                    info_box.is_visible = false;
+                    info_box.selected_stem = null;
                 }
             } else if (rl.isMouseButtonPressed(.middle)) {} else if (rl.isMouseButtonPressed(.right)) {}
             // ---- END UPDATE ----
@@ -319,6 +377,60 @@ pub fn main() !void {
                     0.0,
                     rl.Color.white,
                 );
+            }
+
+            // Draw logic for info box
+            if (info_box.is_visible) {
+                // Draw the info box background
+                rl.drawRectangle(
+                    info_box.x,
+                    info_box.y,
+                    info_box.width,
+                    info_box.height,
+                    rl.Color.light_gray,
+                );
+
+                // Draw the close button
+                rl.drawRectangle(
+                    info_box.x + info_box.width - close_button.size,
+                    info_box.y,
+                    close_button.size,
+                    close_button.size,
+                    rl.Color.red,
+                );
+
+                rl.drawText(
+                    "X",
+                    info_box.x + info_box.width - close_button.size + 5,
+                    info_box.y + 5,
+                    10,
+                    rl.Color.white,
+                );
+
+                // Draw placeholder info about the selected stem
+                if (info_box.selected_stem) |_| {
+                    rl.drawText(
+                        "Flower Stem Info:",
+                        info_box.x + 10,
+                        info_box.y + 30,
+                        20,
+                        rl.Color.black,
+                    );
+                    rl.drawText(
+                        "ID: ",
+                        info_box.x + 10,
+                        info_box.y + 60,
+                        20,
+                        rl.Color.black,
+                    );
+                    rl.drawText(
+                        "Angle: ",
+                        info_box.x + 10,
+                        info_box.y + 90,
+                        20,
+                        rl.Color.black,
+                    );
+                }
             }
 
             // Timestamp at the top
