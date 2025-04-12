@@ -236,13 +236,11 @@ pub fn main() !void {
                 timestamp_update = loop_time;
             }
 
+            // is mouse over flowerstem
+            const stem_select = getNearestFlowerStem(mouse_pos, flower_stem_nodes);
+
             // Mouse input
             if (rl.isMouseButtonPressed(.left)) {
-                // std.debug.print(
-                //     "Mouse left button pressed at x:{d}, y:{d}\n",
-                //     .{ mouse_pos.x, mouse_pos.y },
-                // );
-
                 // Check if UI Element is clicked
                 for (ui_elements.items) |*ui_element| {
                     if (isPointInsideRect(
@@ -258,19 +256,9 @@ pub fn main() !void {
                 }
 
                 // Check if a flower stem is clicked
-                for (flower_stem_nodes.items) |*node| {
-                    if (isPointInsideRotatedRect(
-                        mouse_pos.x,
-                        mouse_pos.y,
-                        node.pos.?.x,
-                        node.pos.?.y,
-                        100.0,
-                        100.0,
-                        node.angle,
-                    )) {
-                        info_box.is_visible = true;
-                        info_box.selected_stem = node;
-                    }
+                if (stem_select) |stem| {
+                    info_box.is_visible = true;
+                    info_box.selected_stem = stem;
                 }
 
                 // Check if close button is clicked
@@ -298,7 +286,6 @@ pub fn main() !void {
                 rl.drawCircleV(node.bottom_middle.?, 5, rl.Color.dark_green);
             }
 
-            var stem_select: ?rl.Vector2 = null;
             // Flowerstem
             for (flower_stem_nodes.items) |node| {
                 // Draw Flowerstem
@@ -318,41 +305,11 @@ pub fn main() !void {
                 if (node.is_leaf) {
                     rl.drawCircleV(node.top_middle.?, 5, rl.Color.yellow);
                 }
-
-                // check for collision mouse with flowerstem
-                if (isPointInsideRotatedRect(
-                    mouse_pos.x,
-                    mouse_pos.y,
-                    node.pos.?.x,
-                    node.pos.?.y,
-                    100.0,
-                    100.0,
-                    node.angle,
-                )) {
-                    if (stem_select == null) {
-                        stem_select = node.pos;
-                    } else {
-                        // calculate distances to mouse
-                        const dist1 = rl.Vector2.init(
-                            stem_select.?.x - mouse_pos.x,
-                            stem_select.?.y - mouse_pos.y,
-                        ).length();
-
-                        const dist2 = rl.Vector2.init(
-                            node.pos.?.x - mouse_pos.x,
-                            node.pos.?.y - mouse_pos.y,
-                        ).length();
-
-                        if (dist2 < dist1) {
-                            stem_select = node.pos;
-                        }
-                    }
-                }
             }
 
             // Draw Selected Flowerstem
-            if (stem_select != null) {
-                rl.drawCircleV(stem_select.?, 5, rl.Color.red);
+            if (stem_select) |stem| {
+                rl.drawCircleV(stem.pos.?, 5, rl.Color.red);
             }
 
             // Flowerpot
@@ -624,4 +581,41 @@ fn isPointInsideRotatedRect(
     const half_height = height / 2.0;
 
     return @abs(rotated_x) <= half_width and @abs(rotated_y) <= half_height;
+}
+
+fn getNearestFlowerStem(mouse_pos: rl.Vector2, flower_stem_nodes: std.ArrayList(FlowerStemNode)) ?*FlowerStemNode {
+    var nearest_stem: ?*FlowerStemNode = null;
+
+    for (flower_stem_nodes.items) |*node| {
+        if (isPointInsideRotatedRect(
+            mouse_pos.x,
+            mouse_pos.y,
+            node.pos.?.x,
+            node.pos.?.y,
+            100.0,
+            100.0,
+            node.angle,
+        )) {
+            if (nearest_stem == null) {
+                nearest_stem = node;
+            } else {
+                // calculate distances to mouse
+                const dist1 = rl.Vector2.init(
+                    nearest_stem.?.pos.?.x - mouse_pos.x,
+                    nearest_stem.?.pos.?.y - mouse_pos.y,
+                ).length();
+
+                const dist2 = rl.Vector2.init(
+                    node.pos.?.x - mouse_pos.x,
+                    node.pos.?.y - mouse_pos.y,
+                ).length();
+
+                if (dist2 < dist1) {
+                    nearest_stem = node;
+                }
+            }
+        }
+    }
+
+    return nearest_stem;
 }
