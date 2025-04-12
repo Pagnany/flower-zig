@@ -408,7 +408,7 @@ pub fn main() !void {
                 );
 
                 // Draw placeholder info about the selected stem
-                if (info_box.selected_stem) |_| {
+                if (info_box.selected_stem) |stem| {
                     rl.drawText(
                         "Flower Stem Info:",
                         info_box.x + 10,
@@ -416,15 +416,21 @@ pub fn main() !void {
                         20,
                         rl.Color.black,
                     );
+
+                    const id_string = try std.fmt.allocPrintZ(allocator, "ID: {d}", .{stem.id});
+                    defer allocator.free(id_string);
                     rl.drawText(
-                        "ID: ",
+                        id_string,
                         info_box.x + 10,
                         info_box.y + 60,
                         20,
                         rl.Color.black,
                     );
+
+                    const id_angle = try std.fmt.allocPrintZ(allocator, "Angle: {d}", .{stem.angle});
+                    defer allocator.free(id_angle);
                     rl.drawText(
-                        "Angle: ",
+                        id_angle,
                         info_box.x + 10,
                         info_box.y + 90,
                         20,
