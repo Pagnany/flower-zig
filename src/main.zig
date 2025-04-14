@@ -385,12 +385,22 @@ pub fn main() !void {
                         rl.Color.black,
                     );
 
-                    const id_angle = try std.fmt.allocPrintZ(allocator, "Angle: {d}", .{stem.angle});
-                    defer allocator.free(id_angle);
+                    const angle_string = try std.fmt.allocPrintZ(allocator, "Angle: {d}", .{stem.angle});
+                    defer allocator.free(angle_string);
                     rl.drawText(
-                        id_angle,
+                        angle_string,
                         info_box.x + 10,
                         info_box.y + 90,
+                        20,
+                        rl.Color.black,
+                    );
+
+                    const is_leaf_string = try std.fmt.allocPrintZ(allocator, "Leaf: {}", .{stem.is_leaf});
+                    defer allocator.free(is_leaf_string);
+                    rl.drawText(
+                        is_leaf_string,
+                        info_box.x + 10,
+                        info_box.y + 120,
                         20,
                         rl.Color.black,
                     );
