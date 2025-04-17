@@ -46,8 +46,8 @@ const CloseButton = struct {
 
 pub fn main() !void {
     // const allocator = std.heap.c_allocator;
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
+    var dba: std.heap.DebugAllocator(.{}) = .init;
+    const allocator = dba.allocator();
 
     {
 
