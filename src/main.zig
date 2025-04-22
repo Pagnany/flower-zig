@@ -427,7 +427,7 @@ pub fn main() !void {
     }
 
     // Check for leaks
-    if (gpa.deinit() == .leak) {
+    if (dba.deinit() == .leak) {
         std.debug.print("Memory leak detected!\n", .{});
     } else {
         std.debug.print("No memory leaks!\n", .{});
