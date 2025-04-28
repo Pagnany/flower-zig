@@ -70,20 +70,14 @@ pub fn main() !void {
 
         // ---- TEXTURES ----
         // Watering Can
-        const watering_can_img = try rl.loadImage("resources/watering_can_01.png");
-        const watering_can_texture = try rl.loadTextureFromImage(watering_can_img);
+        const watering_can_texture = try rl.loadTexture("resources/watering_can_01.png");
         defer rl.unloadTexture(watering_can_texture);
-        rl.unloadImage(watering_can_img);
         // Flowerpot
-        const flowerpot_img = try rl.loadImage("resources/flower_pot_01.png");
-        const flowerpot_texture = try rl.loadTextureFromImage(flowerpot_img);
+        const flowerpot_texture = try rl.loadTexture("resources/flower_pot_01.png");
         defer rl.unloadTexture(flowerpot_texture);
-        rl.unloadImage(flowerpot_img);
         // Flowerstem
-        const flowerstem_img = try rl.loadImage("resources/flower_stem_01.png");
-        const flowerstem_texture = try rl.loadTextureFromImage(flowerstem_img);
+        const flowerstem_texture = try rl.loadTexture("resources/flower_stem_01.png");
         defer rl.unloadTexture(flowerstem_texture);
-        rl.unloadImage(flowerstem_img);
         // ---- END TEXTURES ----
 
         // Flower List
