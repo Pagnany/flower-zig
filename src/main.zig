@@ -428,37 +428,46 @@ pub fn main() !void {
     }
 }
 
-pub fn write_read_file(alloc: std.mem.Allocator) !void {
-    const file_name = "save/save01.json";
+/// A test to write a struct to file
+pub fn write_read_file(allocator: std.mem.Allocator) !void {
+    const temp_stem =
+        FlowerStemNode{
+            .id = 6,
+            .is_root = false,
+            .is_leaf = true,
+            .pos = .init(3, 0),
+            .top_middle = .init(100, 200),
+            .bottom_middle = .init(0.12, 0.2),
+            .texture = null,
+            .angle = 90.0,
+            .prev_id = 2,
+        };
 
-    // Create directory if it doesn't exist
+    var json_string = std.ArrayList(u8).init(allocator);
+    defer json_string.deinit();
+    try std.json.stringify(temp_stem, .{}, json_string.writer());
+
+    // Create Dir and File
+    const file_name = "save/save02.json";
     try std.fs.cwd().makePath("save");
-
     var file = try std.fs.cwd().createFile(file_name, .{});
     defer file.close();
 
-    var json_data = std.ArrayList(u8).init(alloc);
-    defer json_data.deinit();
-    for (0..20) |_| {
-        try json_data.appendSlice("test\n");
-    }
+    // Write to File
+    try file.writeAll(json_string.items);
 
-    // Zig
-    try file.writeAll(json_data.items);
-
-    // Raylib
-    // try json_data.append(0);
-    // const temp: [:0]u8 = json_data.items[0 .. json_data.items.len - 1 :0];
-    // _ = rl.saveFileText(file_name, temp);
-
+    // read from File
     var file_read = try std.fs.cwd().openFile(file_name, .{});
     defer file_read.close();
+    const file_contents = try file_read.readToEndAlloc(allocator, std.math.pow(usize, 1024, 3) * 1);
+    defer allocator.free(file_contents);
+    // std.debug.print("File contents: {s}\n", .{file_contents});
 
-    // Up to 1GB
-    const file_contents = try file_read.readToEndAlloc(alloc, std.math.pow(usize, 1024, 3) * 1);
-    defer alloc.free(file_contents);
-
-    std.debug.print("File contents: {s}\n", .{file_contents});
+    // Parse Object from Json String
+    const parsed = try std.json.parseFromSlice(FlowerStemNode, allocator, file_contents, .{});
+    defer parsed.deinit();
+    const parsed_stem = parsed.value;
+    std.debug.print("Parsed from File {?}\n", .{parsed_stem});
 }
 
 fn get_timestamp(buffer: []u8) void {
