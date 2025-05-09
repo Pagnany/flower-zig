@@ -83,84 +83,18 @@ pub fn main() !void {
         // Flower List
         var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
         defer flower_stem_nodes.deinit();
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 1,
-                .is_root = true,
-                .is_leaf = false,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = 0.0,
-                .prev_id = 0,
-            },
-        );
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 2,
-                .is_root = false,
-                .is_leaf = false,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = 30.0,
-                .prev_id = 1,
-            },
-        );
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 3,
-                .is_root = false,
-                .is_leaf = false,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = -50.0,
-                .prev_id = 1,
-            },
-        );
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 4,
-                .is_root = false,
-                .is_leaf = true,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = 10.0,
-                .prev_id = 2,
-            },
-        );
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 5,
-                .is_root = false,
-                .is_leaf = true,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = -170.0,
-                .prev_id = 3,
-            },
-        );
-        try flower_stem_nodes.append(
-            FlowerStemNode{
-                .id = 6,
-                .is_root = false,
-                .is_leaf = true,
-                .pos = null,
-                .top_middle = null,
-                .bottom_middle = null,
-                .texture = flowerstem_texture,
-                .angle = 90.0,
-                .prev_id = 2,
-            },
-        );
+
+        // ---- SAVE/LOAD DATA ----
+        // try load_debug_data(&flower_stem_nodes);
+        // try create_save_file(allocator, flower_stem_nodes);
+
+        try load_save_file(allocator, &flower_stem_nodes);
+
+        // set texture for flowerstem
+        for (flower_stem_nodes.items) |*node| {
+            node.texture = flowerstem_texture;
+        }
+        // ---- END SAVE/LOAD DATA ----
 
         // --- UI ELEMENTS ---
         var ui_elements = std.ArrayList(UiElement).init(allocator);
@@ -418,7 +352,6 @@ pub fn main() !void {
 
             prev_loop_time = loop_time;
         }
-        try write_read_file(allocator);
     }
 
     // Check for leaks
@@ -427,6 +360,141 @@ pub fn main() !void {
     } else {
         std.debug.print("No memory leaks!\n", .{});
     }
+}
+
+/// Create a save file with the flower stem nodes
+/// texture is not saved
+pub fn create_save_file(
+    allocator: std.mem.Allocator,
+    flower_stem_nodes_org: std.ArrayList(FlowerStemNode),
+) !void {
+    const file_name = "save/save01.json";
+
+    // Create a copy because we need to remove the texture
+    const flower_stem_nodes = try flower_stem_nodes_org.clone();
+
+    // Don't save texture
+    defer flower_stem_nodes.deinit();
+    for (flower_stem_nodes.items) |*node| {
+        node.texture = null;
+    }
+
+    var json_string = std.ArrayList(u8).init(allocator);
+    defer json_string.deinit();
+    try std.json.stringify(flower_stem_nodes.items, .{}, json_string.writer());
+
+    // Create Dir and File
+    try std.fs.cwd().makePath("save");
+    var file = try std.fs.cwd().createFile(file_name, .{});
+    defer file.close();
+
+    // Write to File
+    try file.writeAll(json_string.items);
+}
+
+pub fn load_save_file(
+    allocator: std.mem.Allocator,
+    flower_stem_nodes: *std.ArrayList(FlowerStemNode),
+) !void {
+    const file_name = "save/save01.json";
+
+    // Read from File
+    var file_read = try std.fs.cwd().openFile(file_name, .{});
+    defer file_read.close();
+
+    // Max 1GB
+    const file_contents = try file_read.readToEndAlloc(allocator, std.math.pow(usize, 1024, 3) * 1);
+
+    // Parse Object from Json String
+    const parsed = try std.json.parseFromSlice([]FlowerStemNode, allocator, file_contents, .{});
+    allocator.free(file_contents);
+
+    // Convert to ArrayList
+    flower_stem_nodes.clearAndFree();
+    try flower_stem_nodes.appendSlice(parsed.value);
+    parsed.deinit();
+}
+
+/// Debug data for testing
+pub fn load_debug_data(flower_stem_nodes: *std.ArrayList(FlowerStemNode)) !void {
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 1,
+            .is_root = true,
+            .is_leaf = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = 0.0,
+            .prev_id = 0,
+        },
+    );
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 2,
+            .is_root = false,
+            .is_leaf = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = 30.0,
+            .prev_id = 1,
+        },
+    );
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 3,
+            .is_root = false,
+            .is_leaf = false,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = -50.0,
+            .prev_id = 1,
+        },
+    );
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 4,
+            .is_root = false,
+            .is_leaf = true,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = 10.0,
+            .prev_id = 2,
+        },
+    );
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 5,
+            .is_root = false,
+            .is_leaf = true,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = -170.0,
+            .prev_id = 3,
+        },
+    );
+    try flower_stem_nodes.append(
+        FlowerStemNode{
+            .id = 6,
+            .is_root = false,
+            .is_leaf = true,
+            .pos = null,
+            .top_middle = null,
+            .bottom_middle = null,
+            .texture = null,
+            .angle = 90.0,
+            .prev_id = 2,
+        },
+    );
 }
 
 /// A test to write a ArrayList to File
