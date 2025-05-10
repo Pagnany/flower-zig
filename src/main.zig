@@ -3,13 +3,15 @@ const std = @import("std");
 const ctime = @cImport({
     @cInclude("time.h");
 });
-const http = @import("http.zig");
 
-const PI = 3.14159265358979323846;
+const save = @import("save_data.zig");
+const debug = @import("debug.zig");
+
+const PI = 3.14159265358979323846264338327950288419716939937510;
 const DEG2RAD = (PI / 180.0);
 const RAD2DEG = (180.0 / PI);
 
-const FlowerStemNode = struct {
+pub const FlowerStemNode = struct {
     id: u32,
     is_root: bool,
     is_leaf: bool,
@@ -85,10 +87,10 @@ pub fn main() !void {
         defer flower_stem_nodes.deinit();
 
         // ---- SAVE/LOAD DATA ----
-        // try load_debug_data(&flower_stem_nodes);
-        // try create_save_file(allocator, flower_stem_nodes);
+        try debug.load_debug_data(&flower_stem_nodes);
+        try save.create_save_file(allocator, flower_stem_nodes);
 
-        try load_save_file(allocator, &flower_stem_nodes);
+        try save.load_save_file(allocator, &flower_stem_nodes);
 
         // set texture for flowerstem
         for (flower_stem_nodes.items) |*node| {
@@ -360,206 +362,6 @@ pub fn main() !void {
     } else {
         std.debug.print("No memory leaks!\n", .{});
     }
-}
-
-/// Create a save file with the flower stem nodes
-/// texture is not saved
-pub fn create_save_file(
-    allocator: std.mem.Allocator,
-    flower_stem_nodes_org: std.ArrayList(FlowerStemNode),
-) !void {
-    const file_name = "save/save01.json";
-
-    // Create a copy because we need to remove the texture
-    const flower_stem_nodes = try flower_stem_nodes_org.clone();
-
-    // Don't save texture
-    defer flower_stem_nodes.deinit();
-    for (flower_stem_nodes.items) |*node| {
-        node.texture = null;
-    }
-
-    var json_string = std.ArrayList(u8).init(allocator);
-    defer json_string.deinit();
-    try std.json.stringify(flower_stem_nodes.items, .{}, json_string.writer());
-
-    // Create Dir and File
-    try std.fs.cwd().makePath("save");
-    var file = try std.fs.cwd().createFile(file_name, .{});
-    defer file.close();
-
-    // Write to File
-    try file.writeAll(json_string.items);
-}
-
-pub fn load_save_file(
-    allocator: std.mem.Allocator,
-    flower_stem_nodes: *std.ArrayList(FlowerStemNode),
-) !void {
-    const file_name = "save/save01.json";
-
-    // Read from File
-    var file_read = try std.fs.cwd().openFile(file_name, .{});
-    defer file_read.close();
-
-    // Max 1GB
-    const file_contents = try file_read.readToEndAlloc(allocator, std.math.pow(usize, 1024, 3) * 1);
-
-    // Parse Object from Json String
-    const parsed = try std.json.parseFromSlice([]FlowerStemNode, allocator, file_contents, .{});
-    allocator.free(file_contents);
-
-    // Convert to ArrayList
-    flower_stem_nodes.clearAndFree();
-    try flower_stem_nodes.appendSlice(parsed.value);
-    parsed.deinit();
-}
-
-/// Debug data for testing
-pub fn load_debug_data(flower_stem_nodes: *std.ArrayList(FlowerStemNode)) !void {
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 1,
-            .is_root = true,
-            .is_leaf = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 0.0,
-            .prev_id = 0,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 2,
-            .is_root = false,
-            .is_leaf = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 30.0,
-            .prev_id = 1,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 3,
-            .is_root = false,
-            .is_leaf = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = -50.0,
-            .prev_id = 1,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 4,
-            .is_root = false,
-            .is_leaf = true,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 10.0,
-            .prev_id = 2,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 5,
-            .is_root = false,
-            .is_leaf = true,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = -170.0,
-            .prev_id = 3,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 6,
-            .is_root = false,
-            .is_leaf = true,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 90.0,
-            .prev_id = 2,
-        },
-    );
-}
-
-/// A test to write a ArrayList to File
-/// the nonuse of `defer` is intentional
-pub fn write_read_file(allocator: std.mem.Allocator) !void {
-    const file_name = "save/save02.json";
-
-    var flower_stem_nodes = std.ArrayList(FlowerStemNode).init(allocator);
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 1,
-            .is_root = true,
-            .is_leaf = false,
-            .pos = null,
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 0.0,
-            .prev_id = 0,
-        },
-    );
-    try flower_stem_nodes.append(
-        FlowerStemNode{
-            .id = 2,
-            .is_root = true,
-            .is_leaf = false,
-            .pos = .init(12, 129),
-            .top_middle = null,
-            .bottom_middle = null,
-            .texture = null,
-            .angle = 90.0,
-            .prev_id = 1,
-        },
-    );
-
-    var json_string = std.ArrayList(u8).init(allocator);
-    try std.json.stringify(flower_stem_nodes.items, .{}, json_string.writer());
-
-    // Create Dir and File
-    try std.fs.cwd().makePath("save");
-    var file = try std.fs.cwd().createFile(file_name, .{});
-
-    // Write to File
-    try file.writeAll(json_string.items);
-    file.close();
-    json_string.deinit();
-    flower_stem_nodes.deinit();
-
-    // Read from File
-    var file_read = try std.fs.cwd().openFile(file_name, .{});
-    // Max 1GB
-    const file_contents = try file_read.readToEndAlloc(allocator, std.math.pow(usize, 1024, 3) * 1);
-    file_read.close();
-
-    // Parse Object from Json String
-    const parsed = try std.json.parseFromSlice([]FlowerStemNode, allocator, file_contents, .{});
-    allocator.free(file_contents);
-
-    // Convert to ArrayList
-    var flower_stem_nodes2 = std.ArrayList(FlowerStemNode).init(allocator);
-    defer flower_stem_nodes2.deinit();
-    try flower_stem_nodes2.appendSlice(parsed.value);
-    parsed.deinit();
-
-    std.debug.print("Parsed from File {any}\n", .{flower_stem_nodes2.items});
 }
 
 fn get_timestamp(buffer: []u8) void {
