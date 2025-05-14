@@ -38,12 +38,8 @@ const InfoBox = struct {
     y: i32,
     width: i32,
     height: i32,
-    close_button_size: f32,
+    close_button_size: i32,
     selected_stem: ?*FlowerStemNode,
-};
-
-const CloseButton = struct {
-    size: i32,
 };
 
 pub fn main() !void {
@@ -87,8 +83,8 @@ pub fn main() !void {
         defer flower_stem_nodes.deinit();
 
         // ---- SAVE/LOAD DATA ----
-        try debug.load_debug_data(&flower_stem_nodes);
-        try save.create_save_file(allocator, flower_stem_nodes);
+        // try debug.load_debug_data(&flower_stem_nodes);
+        // try save.create_save_file(allocator, flower_stem_nodes);
 
         try save.load_save_file(allocator, &flower_stem_nodes);
 
@@ -132,10 +128,7 @@ pub fn main() !void {
             .close_button_size = 20.0,
             .selected_stem = null,
         };
-
-        const close_button = CloseButton{
-            .size = 20,
-        };
+        // ---- END UI ELEMENTS ----
 
         // Timestamp
         var timestamp_update = rl.getTime();
@@ -196,10 +189,10 @@ pub fn main() !void {
                 if (info_box.is_visible and isPointInsideRect(
                     mouse_pos.x,
                     mouse_pos.y,
-                    @as(f32, @floatFromInt(info_box.x + info_box.width - close_button.size)),
+                    @as(f32, @floatFromInt(info_box.x + info_box.width - info_box.close_button_size)),
                     @as(f32, @floatFromInt(info_box.y)),
-                    @as(f32, @floatFromInt(close_button.size)),
-                    @as(f32, @floatFromInt(close_button.size)),
+                    @as(f32, @floatFromInt(info_box.close_button_size)),
+                    @as(f32, @floatFromInt(info_box.close_button_size)),
                 )) {
                     info_box.is_visible = false;
                     info_box.selected_stem = null;
@@ -280,16 +273,16 @@ pub fn main() !void {
 
                 // Draw the close button
                 rl.drawRectangle(
-                    info_box.x + info_box.width - close_button.size,
+                    info_box.x + info_box.width - info_box.close_button_size,
                     info_box.y,
-                    close_button.size,
-                    close_button.size,
+                    info_box.close_button_size,
+                    info_box.close_button_size,
                     rl.Color.red,
                 );
 
                 rl.drawText(
                     "X",
-                    info_box.x + info_box.width - close_button.size + 5,
+                    info_box.x + info_box.width - info_box.close_button_size + 5,
                     info_box.y + 5,
                     10,
                     rl.Color.white,
